@@ -33,5 +33,13 @@ func Migrate(db *sql.DB) error {
  CREATE TABLE IF NOT EXISTS tasks (task_id TEXT PRIMARY KEY, type TEXT NOT NULL, status TEXT NOT NULL, status_message TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL, expires_at TEXT NOT NULL, cancel_requested INTEGER NOT NULL DEFAULT 0, result_json TEXT, error_json TEXT);
  CREATE TABLE IF NOT EXISTS import_jobs (id TEXT PRIMARY KEY, task_id TEXT NOT NULL REFERENCES tasks(task_id), items_json TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'queued', claimed_at TEXT);
  `)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func EnsureSystemLists(db *sql.DB) error {
+	_, err := db.Exec(`INSERT OR IGNORE INTO lists(id,name) VALUES ('inbox','Inbox'), ('today','Today'), ('done','Done')`)
 	return err
 }

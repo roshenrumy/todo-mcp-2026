@@ -14,6 +14,19 @@ type Todo struct {
 }
 type Service struct{ DB *sql.DB }
 
+type Change struct {
+	Priority, ListID, DueAt *string `json:"priority,omitempty"`
+}
+type Update struct {
+	TodoID  string `json:"todoId"`
+	Changes Change `json:"changes"`
+}
+type UpdateResult struct {
+	TodoID     string `json:"todoId"`
+	Error      string `json:"error,omitempty"`
+	Successful bool   `json:"successful"`
+}
+
 func (s Service) List() ([]Todo, error) {
 	rows, e := s.DB.Query(`SELECT id,title,COALESCE(description,''),list_id,priority,COALESCE(due_at,''),COALESCE(parent_todo_id,''),completed,version FROM todos ORDER BY created_at`)
 	if e != nil {
@@ -68,6 +81,42 @@ func (s Service) Move(id, target string, include bool) error {
 		}
 	}
 	return tx.Commit()
+}
+
+// BulkUpdate deliberately serializes SQLite writes in a brief transaction.
+func (s Service) BulkUpdate(updates []Update) ([]UpdateResult, error) {
+	tx, err := s.DB.Begin()
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+	results := make([]UpdateResult, 0, len(updates))
+	now := time.Now().UTC().Format(time.RFC3339)
+	for _, u := range updates {
+		if u.TodoID == "" {
+			results = append(results, UpdateResult{Error: "todoId is required"})
+			continue
+		}
+		var exists int
+		if err := tx.QueryRow(`SELECT count(*) FROM todos WHERE id=?`, u.TodoID).Scan(&exists); err != nil {
+			return nil, err
+		}
+		if exists == 0 {
+			results = append(results, UpdateResult{TodoID: u.TodoID, Error: "todo not found"})
+			continue
+		}
+		if u.Changes.Priority != nil && *u.Changes.Priority != "low" && *u.Changes.Priority != "medium" && *u.Changes.Priority != "high" {
+			results = append(results, UpdateResult{TodoID: u.TodoID, Error: "invalid priority"})
+			continue
+		}
+		_, err := tx.Exec(`UPDATE todos SET priority=COALESCE(?,priority),list_id=COALESCE(?,list_id),due_at=COALESCE(?,due_at),version=version+1,updated_at=? WHERE id=?`, u.Changes.Priority, u.Changes.ListID, u.Changes.DueAt, now, u.TodoID)
+		if err != nil {
+			results = append(results, UpdateResult{TodoID: u.TodoID, Error: err.Error()})
+			continue
+		}
+		results = append(results, UpdateResult{TodoID: u.TodoID, Successful: true})
+	}
+	return results, tx.Commit()
 }
 func (s Service) IncompleteChildren(id string) ([]string, int, error) {
 	rows, e := s.DB.Query(`SELECT id FROM todos WHERE parent_todo_id=? AND completed=0`, id)
