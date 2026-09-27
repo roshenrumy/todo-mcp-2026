@@ -1,0 +1,60 @@
+apiVersion: v1
+kind: Namespace
+metadata: {name: mcp-todo-demo}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata: {name: todo-data, namespace: mcp-todo-demo}
+spec: {accessModes: [ReadWriteOnce], resources: {requests: {storage: 1Gi}}}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: todo-mcp, namespace: mcp-todo-demo}
+spec:
+  replicas: 2
+  selector: {matchLabels: {app: todo-mcp}}
+  template:
+    metadata: {labels: {app: todo-mcp}}
+    spec:
+      containers:
+      - name: server
+        image: todo-mcp:dev13
+        imagePullPolicy: Never
+        args: [server]
+        env: [{name: DATABASE_PATH, value: /data/todo.db}, {name: REQUEST_STATE_SECRET, value: minikube-demo-secret}]
+        ports: [{containerPort: 8080}]
+        volumeMounts: [{name: data, mountPath: /data}]
+      volumes: [{name: data, persistentVolumeClaim: {claimName: todo-data}}]
+---
+apiVersion: v1
+kind: Service
+metadata: {name: todo-mcp, namespace: mcp-todo-demo}
+spec: {selector: {app: todo-mcp}, ports: [{port: 8080, targetPort: 8080}]}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: {name: todo-import-worker, namespace: mcp-todo-demo}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: todo-import-worker}}
+  template:
+    metadata: {labels: {app: todo-import-worker}}
+    spec:
+      containers:
+      - name: worker
+        image: todo-mcp:dev13
+        imagePullPolicy: Never
+        args: [worker]
+        env: [{name: DATABASE_PATH, value: /data/todo.db}, {name: IMPORT_DELAY_MS, value: "75"}]
+        volumeMounts: [{name: data, mountPath: /data}]
+      volumes: [{name: data, persistentVolumeClaim: {claimName: todo-data}}]
+---
+apiVersion: batch/v1
+kind: Job
+metadata: {name: todo-migrate, namespace: mcp-todo-demo}
+spec: {template: {spec: {restartPolicy: OnFailure, containers: [{name: migrate, image: todo-mcp:dev13, imagePullPolicy: Never, args: [migrate], env: [{name: DATABASE_PATH, value: /data/todo.db}], volumeMounts: [{name: data, mountPath: /data}]}], volumes: [{name: data, persistentVolumeClaim: {claimName: todo-data}}]}}}
+---
+apiVersion: batch/v1
+kind: Job
+metadata: {name: todo-seed, namespace: mcp-todo-demo}
+spec: {template: {spec: {restartPolicy: OnFailure, containers: [{name: seed, image: todo-mcp:dev13, imagePullPolicy: Never, args: [seed], env: [{name: DATABASE_PATH, value: /data/todo.db}], volumeMounts: [{name: data, mountPath: /data}]}], volumes: [{name: data, persistentVolumeClaim: {claimName: todo-data}}]}}}
