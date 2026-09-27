@@ -1,0 +1,126 @@
+{
+  "evidenceVersion": 2,
+  "description": "Self-contained verified Todo MCP demo evidence. Each numbered item includes its own payload; no other file is required.",
+  "items": {
+    "1_list_todos_stateless_request": {
+      "verifiedBy": "MCPJam Inspector capture",
+      "jsonrpc": "2.0",
+      "id": 17,
+      "method": "tools/call",
+      "params": {
+        "name": "list_todos",
+        "arguments": {},
+        "_meta": {
+          "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+          "io.modelcontextprotocol/clientInfo": { "name": "mcpjam-inspector", "version": "0.0.0" },
+          "io.modelcontextprotocol/clientCapabilities": { "extensions": { "io.modelcontextprotocol/tasks": {} } }
+        }
+      }
+    },
+    "2_discovery_cache_response": {
+      "verifiedBy": "live deployed MCP server",
+      "jsonrpc": "2.0",
+      "id": "discover-evidence",
+      "result": {
+        "resultType": "complete",
+        "ttlMs": 0,
+        "cacheScope": "public",
+        "_meta": { "io.modelcontextprotocol/serverInfo": { "name": "todo-mcp-2026", "version": "0.1.0" } },
+        "supportedVersions": ["2026-07-28", "2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"],
+        "capabilities": { "extensions": { "io.modelcontextprotocol/tasks": {} }, "prompts": { "listChanged": true }, "tools": { "listChanged": true } }
+      }
+    },
+    "3_import_todos_request": {
+      "verifiedBy": "live deployed MCP server",
+      "jsonrpc": "2.0",
+      "id": "import-evidence",
+      "method": "tools/call",
+      "params": {
+        "name": "import_todos",
+        "arguments": { "items": [] },
+        "_meta": { "io.modelcontextprotocol/protocolVersion": "2026-07-28", "io.modelcontextprotocol/clientCapabilities": { "extensions": { "io.modelcontextprotocol/tasks": {} } } }
+      },
+      "note": "This intentionally empty import verified task creation without adding todos."
+    },
+    "4_task_creation_response": {
+      "verifiedBy": "live deployed MCP server",
+      "jsonrpc": "2.0",
+      "id": "import-evidence",
+      "result": {
+        "resultType": "task",
+        "taskId": "eee05339-3387-421a-913f-21cc96bb1988",
+        "status": "working",
+        "createdAt": "2026-09-27T18:03:25Z",
+        "lastUpdatedAt": "2026-09-27T18:03:25Z",
+        "ttlMs": 600000,
+        "pollIntervalMs": 500
+      }
+    },
+    "5_task_poll_request": {
+      "verifiedBy": "captured MCP task client request",
+      "jsonrpc": "2.0",
+      "id": 19,
+      "method": "tasks/get",
+      "params": {
+        "taskId": "8471edd5-0570-458b-b695-e1915daaab67",
+        "_meta": { "io.modelcontextprotocol/protocolVersion": "2026-07-28", "io.modelcontextprotocol/clientInfo": { "name": "openai-mcp", "version": "1.0.0" }, "io.modelcontextprotocol/clientCapabilities": { "extensions": { "io.modelcontextprotocol/tasks": {} } } }
+      }
+    },
+    "6_task_progress_response": {
+      "verifiedBy": "live deployed MCP server with a temporary 5-second per-item delay",
+      "jsonrpc": "2.0",
+      "id": "progress-five-second-poll",
+      "result": {
+        "resultType": "complete",
+        "taskId": "3ca6081b-6c67-48e6-a9c8-003e7df8a5d4",
+        "status": "working",
+        "statusMessage": "Imported 1 / 2 todos",
+        "createdAt": "2026-09-27T18:07:35Z",
+        "lastUpdatedAt": "2026-09-27T18:07:35Z",
+        "ttlMs": 600000,
+        "pollIntervalMs": 500
+      }
+    },
+    "7_mrtr_input_required_response": {
+      "verifiedBy": "MCPJam Playground capture",
+      "resultType": "input_required",
+      "message": "This todo has 2 incomplete subtasks. What should happen?",
+      "options": ["move_parent_only", "move_with_subtasks", "cancel"],
+      "requestState": "eyJPcGVyYXRpb24iOiJtb3ZlX3RvZG8iLCJUb2RvSUQiOiJlOWZhYzA5NC1mNWUzLTQ3NTItOTgwMS1jM2E4OTNhYmNlZjAiLCJUYXJnZXRMaXN0SUQiOiJkb25lIiwiVG9kb1ZlcnNpb24iOjEsIkluY29tcGxldGVTdWJ0YXNrSURzIjpbIjY3MTdjMTg3LTNlZDgtNDAzYi05NDEyLWE5Y2NkOWQyYWIyZCIsIjMxNGI1ZjZiLTgyZTAtNGZlMy1hYzkxLTNhMDdjZjE4MWMxZiJdLCJFeHBpcmVzQXQiOiIyMDI2LTA5LTI3VDE3OjEwOjI4LjM5MDQyMDg2NFoifQ.T7OJkD27QFLIzwHrERNBgEBKj1lv-SXYPmXZqlY_z-U"
+    },
+    "8_conceptual_decoded_requestState": {
+      "verifiedBy": "decoded from the captured signed requestState token",
+      "Operation": "move_todo",
+      "TodoID": "e9fac094-f5e3-4752-9801-c3a893abcef0",
+      "TargetListID": "done",
+      "TodoVersion": 1,
+      "IncompleteSubtaskIDs": ["6717c187-3ed8-403b-9412-a9ccd9d2ab2d", "314b5f6b-82e0-4fe3-a9c1-3a07cf185c1f"],
+      "ExpiresAt": "2026-09-27T17:10:28.390420864Z",
+      "note": "Conceptual only: the client sends the signed requestState token, not this decoded payload."
+    },
+    "9_mrtr_retry_request": {
+      "verifiedBy": "MCPJam Playground capture",
+      "jsonrpc": "2.0",
+      "method": "tools/call",
+      "params": {
+        "name": "move_todo",
+        "arguments": {
+          "todoId": "e9fac094-f5e3-4752-9801-c3a893abcef0",
+          "target": "done",
+          "choice": "move_with_subtasks",
+          "requestState": "eyJPcGVyYXRpb24iOiJtb3ZlX3RvZG8iLCJUb2RvSUQiOiJlOWZhYzA5NC1mNWUzLTQ3NTItOTgwMS1jM2E4OTNhYmNlZjAiLCJUYXJnZXRMaXN0SUQiOiJkb25lIiwiVG9kb1ZlcnNpb24iOjEsIkluY29tcGxldGVTdWJ0YXNrSURzIjpbIjY3MTdjMTg3LTNlZDgtNDAzYi05NDEyLWE5Y2NkOWQyYWIyZCIsIjMxNGI1ZjZiLTgyZTAtNGZlMy1hYzkxLTNhMDdjZjE4MWMxZiJdLCJFeHBpcmVzQXQiOiIyMDI2LTA5LTI3VDE3OjEwOjI4LjM5MDQyMDg2NFoifQ.T7OJkD27QFLIzwHrERNBgEBKj1lv-SXYPmXZqlY_z-U"
+        }
+      }
+    },
+    "10_plan_my_day_full_orchestration": {
+      "verifiedBy": "MCPJam Playground capture",
+      "prompt": "[todo-mcp-server/plan_my_day] Plan my day for tomorrow using exactly 120 available minutes. Call list_todos; inspect overdue and due-today work; prioritize high priority work; fit it into the provided time; show the proposed plan before changing data; then make exactly one bulk_update_todos call after approval.",
+      "orchestration": [
+        { "method": "tools/call", "tool": "list_todos", "arguments": {} },
+        { "assistantAction": "present proposed plan and await approval" },
+        { "method": "tools/call", "tool": "bulk_update_todos", "arguments": { "updates": [{ "todoId": "2ca81285-af79-4a68-9cb3-da6dd4eee3a5", "changes": { "priority": "high" } }, { "todoId": "306fd645-7f27-476f-a2ee-6f41403f6a0b", "changes": { "priority": "high" } }, { "todoId": "5fc625e6-2b69-406b-b4b9-f5aa73a52d3d", "changes": { "priority": "high" } }] } },
+        { "response": { "successful": [{ "todoId": "2ca81285-af79-4a68-9cb3-da6dd4eee3a5", "successful": true }, { "todoId": "306fd645-7f27-476f-a2ee-6f41403f6a0b", "successful": true }, { "todoId": "5fc625e6-2b69-406b-b4b9-f5aa73a52d3d", "successful": true }], "failed": [] } }
+      ]
+    }
+  }
+}

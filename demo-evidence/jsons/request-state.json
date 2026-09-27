@@ -1,0 +1,825 @@
+{
+  "system": "You are a helpful assistant with access to MCP tools.\n\n## Skills\n\nYou have access to the following skills. When the user names a skill or a task clearly matches one's purpose, load it with `loadSkill` before acting. A reference is either a bare name or `<plugin>/<skill>` for a skill a plugin provides; always pass the reference exactly as listed below.\n\n- **local/controlling-mobile-devices** (local ~/.claude/skills/controlling-mobile-devices): Use when the user asks to interact with mobile devices, Android or iOS — tap, swipe, type, launch apps, take screenshots, run tests, automate workflows, observe UI, collect metrics, or any task involving a phone, tablet, simulator, or emulator. Triggers on \"device\", \"phone\", \"mobile\", \"app\", \"screenshot\", \"tap\", \"swipe\", \"test on device\", \"automate\", \"UI tree\", \"accessibility\", \"smoke test\", \"onboarding\", or any mobile automation task.\n- **local/developing-mobile-apps** (local ~/.claude/skills/developing-mobile-apps): Use when building a new mobile app or adding features to an existing one. Enforces incremental development — break work into small steps, implement one at a time, validate each on a real device via MobAI, then proceed. Triggers on \"build an app\", \"create an app\", \"new app\", \"add feature\", \"implement feature\", \"develop app\", \"make an app\", \"build this\".\n- **local/estimation-workbook** (local ~/.claude/skills/estimation-workbook): Build a client-grade estimation Excel workbook with openpyxl from an estimation ledger or agreed numbers — Overview / Features / Timeline / Cost tabs, merged module blocks, live rate-card formulas, week-grid timeline, branded styling, internal vs client variants. Use when Roshen asks to create, revise, or regenerate an estimation/quote/proposal Excel, a cost sheet, or a delivery timeline workbook. Pairs with the project-estimation skill (which produces the numbers); works standalone when the numbers already exist.\n- **local/gettested-jira-card** (local ~/.claude/skills/gettested-jira-card): Create Jira issues or subtasks in any GetTested project (GMA mobile, GC core, GTSTD, GTESTMVP, GTESTPROT) following the team's title prefix conventions ([UI]/[API]/Bug:) and the Summary / Context / Acceptance criteria / Other information description template. Use when the user asks to create a Jira ticket, subtask, story, bug, or \"card\" under an existing parent in a GetTested project, or asks to break a story down into subtasks.\n- **local/gettested-sprint-planning** (local ~/.claude/skills/gettested-sprint-planning): Create or update a GetTested Sprint Planning Confluence page. Use when the user asks to draft, create, or set up the next sprint planning doc, or update an existing one. Captures the team's standard structure (checklist, team, agenda, commitment, execution plan, capacity, risks, resources) and the cross-project nature of GetTested sprints (GMA mobile + GTSTD custom-supplements web).\n- **local/gitnexus-cli** (local ~/.claude/skills/gitnexus-cli): Use when the user needs to run GitNexus CLI commands like analyze/index a repo, check status, clean the index, generate a wiki, or list indexed repos. Examples: \"Index this repo\", \"Reanalyze the codebase\", \"Generate a wiki\"\n- **local/gitnexus-debugging** (local ~/.claude/skills/gitnexus-debugging): Use when the user is debugging a bug, tracing an error, or asking why something fails. Examples: \"Why is X failing?\", \"Where does this error come from?\", \"Trace this bug\"\n- **local/gitnexus-exploring** (local ~/.claude/skills/gitnexus-exploring): Use when the user asks how code works, wants to understand architecture, trace execution flows, or explore unfamiliar parts of the codebase. Examples: \"How does X work?\", \"What calls this function?\", \"Show me the auth flow\"\n- **local/gitnexus-guide** (local ~/.claude/skills/gitnexus-guide): Use when the user asks about GitNexus itself — available tools, how to query the knowledge graph, MCP resources, graph schema, or workflow reference. Examples: \"What GitNexus tools are available?\", \"How do I use GitNexus?\"\n- **local/gitnexus-impact-analysis** (local ~/.claude/skills/gitnexus-impact-analysis): Use when the user wants to know what will break if they change something, or needs safety analysis before editing code. Examples: \"Is it safe to change X?\", \"What depends on this?\", \"What will break?\"\n- **local/gitnexus-pr-review** (local ~/.claude/skills/gitnexus-pr-review): Use when the user wants to review a pull request, understand what a PR changes, assess risk of merging, or check for missing test coverage. Examples: \"Review this PR\", \"What does PR #42 change?\", \"Is this PR safe to merge?\"\n- **local/gitnexus-refactoring** (local ~/.claude/skills/gitnexus-refactoring): Use when the user wants to rename, extract, split, move, or restructure code safely. Examples: \"Rename this function\", \"Extract this into a module\", \"Refactor this class\", \"Move this to a separate file\"\n- **local/harvest-hours** (local ~/.claude/skills/harvest-hours): Report the hours Roshen has already logged to Harvest for a day (today by default) or a range — grouped by project/task with notes, the day's total, and how it compares to the 8h target. Read-only; it never creates, edits, or deletes entries. Use when Roshen asks how much he's logged, what's on Harvest for a day, whether a day is complete, or invokes /harvest-hours.\n- **local/harvest-logging** (local ~/.claude/skills/harvest-logging): Log the work done in the current Claude session to Harvest — derives real hours from the session transcript, maps the repo to the right project/task, presents the entries, and creates them only after Roshen approves. Use when Roshen asks to log this session's work, log time, or (backfill mode) catch up missing days.\n- **local/harvest-meetings** (local ~/.claude/skills/harvest-meetings): Log Roshen's meetings for a day to Harvest from a short free-text list — expands shorthand like \"dailies\", \"standup\", \"fxelle weekly\" into the right project/task/hours, dedupes against what's already logged, presents the table, and creates entries only after explicit approval. Use when Roshen says to log meetings, gives a list of meetings he attended, or invokes /harvest-meetings.\n- **local/ideabits-interview-prep** (local ~/.claude/skills/ideabits-interview-prep): Generate Roshen's 3-artifact interview package (time-boxed plan, CV-specific scenario questions with sample answers, and a read-along script) for a candidate Roshen is interviewing at Ideabits. Use when Roshen asks to prep an interview, create an interview plan, draft scenario or behavioral questions for a candidate, or build an interview script. Pulls the candidate's CV from `~/Developer/interviewer-notes/<candidate>/` and customises every artifact to the claims on that CV.\n- **local/project-estimation** (local ~/.claude/skills/project-estimation): Roshen's estimation methodology for software projects — decompose scope into workstreams, put FE/BE hours on every feature, apply AI-velocity multipliers, add QA as a formula, derive capacity/timeline, and register blockers and delivery assumptions that condition the quote. Use when Roshen asks to estimate a project, feature set, MVP, phase, or roadmap; re-estimate after scope changes; or \"come up with the numbers\" for a client. Produces a markdown estimation ledger that is the single source of truth feeding the estimation-workbook skill (which builds the Excel).\n\nIf a loaded skill references supporting files, use `listSkillFiles` and `readSkillFile` with the same reference to access them.",
+  "tools": {
+    "bulk_update_todos": {
+      "name": "bulk_update_todos",
+      "description": "Apply independent updates in a bounded SQLite transaction",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "updates": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "object",
+              "properties": {
+                "todoId": {
+                  "type": "string"
+                },
+                "changes": {
+                  "type": "object",
+                  "properties": {
+                    "priority": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "todoId",
+                "changes"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "updates"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "create_todo": {
+      "name": "create_todo",
+      "description": "Create one-time or recurring todo",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "title",
+          "schedule"
+        ],
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "listId": {
+            "type": "string"
+          },
+          "parentId": {
+            "type": "string",
+            "description": "Optional parent Todo ID for a subtask"
+          },
+          "priority": {
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "schedule": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "kind": {
+                "enum": [
+                  "one_time",
+                  "recurring"
+                ]
+              },
+              "dueAt": {
+                "type": "string"
+              },
+              "recurrence": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "import_todos": {
+      "name": "import_todos",
+      "description": "Queue a durable asynchronous Todo import",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "completed": {
+                  "type": "boolean"
+                },
+                "priority": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "title",
+                "completed",
+                "priority"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "list_todos": {
+      "name": "list_todos",
+      "description": "List todos",
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {}
+      }
+    },
+    "move_todo": {
+      "name": "move_todo",
+      "description": "Move or complete a todo. Always call this tool when a user asks to move or complete a todo; do not ask a manual follow-up first. If moving a parent to done with incomplete subtasks, this tool returns input_required with a signed requestState and options. Present that server response to the user, then retry this same tool with their choice and requestState.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "todoId": {
+            "type": "string"
+          },
+          "targetListId": {
+            "type": "string"
+          },
+          "requestState": {
+            "type": "string"
+          },
+          "choice": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "todoId",
+          "targetListId"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "tasks_cancel": {
+      "name": "tasks_cancel",
+      "description": "Request cancellation of an import task",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "taskId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "taskId"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "tasks_get": {
+      "name": "tasks_get",
+      "description": "Get a durable import task",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "taskId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "taskId"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "loadSkill": {
+      "name": "loadSkill",
+      "description": "Load a skill's full instructions by reference. Use when a task matches a skill's purpose.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The skill reference from the skills list above — a bare name ('pdf-processing') or a plugin reference ('my-plugin/pdf-processing')."
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "listSkillFiles": {
+      "name": "listSkillFiles",
+      "description": "List a skill's supporting files (scripts, references, assets). Use after `loadSkill` when a skill mentions supporting files.",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The skill reference."
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "readSkillFile": {
+      "name": "readSkillFile",
+      "description": "Read the contents of a skill's supporting file by its relative path (e.g., 'scripts/fill.py').",
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The skill reference."
+          },
+          "path": {
+            "type": "string",
+            "description": "Relative path within the skill (e.g., 'scripts/fill.py')."
+          }
+        },
+        "required": [
+          "name",
+          "path"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "hi, I need to do task A, but to do that I have to do task B, task C and task D."
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "",
+          "providerOptions": {
+            "openai": {
+              "itemId": "rs_05a71c703421477a006ab94b5d70c887d2bced8d4cc008643c",
+              "reasoningEncryptedContent": "gAAAAABquUtdsbjYrR9GkbHqbMOhoSQr96JzJz7avLFBHBZLtZnw6ccm2642osNdwJqqu54YBUn_foNdlTitQ97Qiga7hCNRjYkGNqLgf5zcey0VCONGCRtMXFi6Qu2K0KRp2le5g1Wh-o7s6uxMjvgJXr23GrvJ9mSGjKZuVClWL3q3RFX0IviuihsJ48Bs6s4ndQBjgTLlAl6kcjUZexXNlfgEC90m1JXpnLLdTcu4jsAxsuc780gugFAinNFlga388zMJn4_i8Jyem8Ns6dhzsq-VkjJL3uzL7N3mmNNv39nI2pd5YmWIU8KZhKOBPYpGTbCaW4CqrbO0lYA6Jhqri7YHOWGkvIwztyrsy_nJBv4_cQlzy0q_1LlSe2zmxvz2WT8X9k5kjGHy-4GuEWuvc3600_gElrRe0amlrXklmuRNXrYaJkm-U0QXQPqW1yo8R0ds7FwqcmvT7hdPAeKSkSgZWNEDOrAm2FIaDfAvMTEiD7GfxSauc1pJ5PR9q1RdVsvxljGjgUYM3PmTgYlaJLA3hTkFXfjXBp_53E3zXDe7pHmNml_EP_U2Z27uFDghSPNyC3_IQ8HJZRAtkZVJnKHYceWV3E8DQpf2I_hYH7fU5CFWJAP-ad2SviywKTGfzCRNMKjKlhiXl5zJEMA0EvXFYyF6Dw6jUVLY64UEbqII_vh-bgWWvrGHPJA0UET3t0WtJihuYfSvWlfifTf9XIImom_J602M_TPoryZLgsjh3gXb13sCQBDg6UApfk9QMuyhM7MLAgFk2VBH9G0-Im6pX6XBUTcM5b8rWBbd5otvRfnzGAgLx9lKAavCMrkX3VPJHkEECq8LJGb_KNtgIwhGamNAEfF9mRtXxHTEvAo2tJzM833wJ-hyBu4feLyO3uL9qtdXVWh3lsQgcKQ24lqljO-a9GkxhUDie1tDM7K2_IMT8sVUMOt7TsFYXe8dZEoArq4zyuBh0MxWTtLQBCoRfblxEaYQVBlhfINEQTHoZvEQlNE3Mw7WHlC0jAtY_JGsR6YeuepmBXG73PgiLbzv7HL_An0IrmcNTx-nQ8h4MmFB-eaQO71ohE3Fcs-0RRGNagWuKofEd1qbqTErgevEAyH-JLBTBSMfOaIKlz9UC7OaTX5ioRUnADHq15HpE993KdO5vQhjVvjwMG9SMlrpa-Xg60qcSntPITaUGTwmEbom-jk58KCdu3nzC_j0iyq8vbkd1kF5OSczc7N-1UNtn5V9_9aK6DSCrj42GLKNcbtze2Nyx4FkHUTdgz6hhx_aNuhM1rWSWTrjRL3n4H5vE7g0Ez8EgpPJsLay0eGGieBexpWG9Cz1tGzywdhD8z6j7q6KF8Fde-G-R4i93G15kWLx2JiYbFi2tNRYfcUo2nRGJtecoCG3xeifaucAL8-EZ3ddt1o-QLqZ-8loiFIJ2Y8QFamllSAWcK29zU1Ij0TUMRPzgk7K4D2ptl3Y1hQvyFf9"
+            }
+          }
+        },
+        {
+          "type": "text",
+          "text": "Got it — the dependency chain is:\n\n**Task B → Task C → Task D → Task A**\n\nWhat are the actual names or details of tasks A–D? I can help break them down, prioritize them, or create them as a linked checklist.",
+          "providerOptions": {
+            "openai": {
+              "itemId": "msg_05a71c703421477a006ab94b5def6087d2a93210faf1bd894e",
+              "phase": "final_answer"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "it is a secret. so can you do task A as the parent and others as sub tasks"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "cn u?"
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "tool-call",
+          "toolCallId": "call_phcGcSgHjTwlFKjGZaNJ6wZl",
+          "toolName": "create_todo",
+          "input": {
+            "title": "Task A",
+            "description": "Parent task. Secret details withheld by user.",
+            "priority": "medium",
+            "schedule": {
+              "kind": "one_time"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": [
+        {
+          "type": "tool-result",
+          "toolCallId": "call_phcGcSgHjTwlFKjGZaNJ6wZl",
+          "toolName": "create_todo",
+          "output": {
+            "type": "json",
+            "value": {
+              "type": "json",
+              "value": {
+                "type": "json",
+                "value": {
+                  "type": "json",
+                  "value": {
+                    "_meta": {
+                      "io.modelcontextprotocol/serverInfo": {
+                        "name": "todo-mcp-2026",
+                        "version": "0.1.0"
+                      }
+                    },
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "{\"ID\":\"e9fac094-f5e3-4752-9801-c3a893abcef0\",\"Title\":\"Task A\",\"Description\":\"Parent task. Secret details withheld by user.\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\\u003cnil\\u003e\",\"ParentID\":\"\",\"Completed\":false,\"Version\":0}"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "tool-call",
+          "toolCallId": "call_kuqGQhvoxsM7jQETWxNXXRy2",
+          "toolName": "create_todo",
+          "input": {
+            "title": "Task B",
+            "description": "Secret prerequisite for Task A.",
+            "parentId": "e9fac094-f5e3-4752-9801-c3a893abcef0",
+            "priority": "medium",
+            "schedule": {
+              "kind": "one_time"
+            }
+          }
+        },
+        {
+          "type": "tool-call",
+          "toolCallId": "call_hqwSPhSeqFyIFTYxPnpOWhix",
+          "toolName": "create_todo",
+          "input": {
+            "title": "Task C",
+            "description": "Secret prerequisite for Task A.",
+            "parentId": "e9fac094-f5e3-4752-9801-c3a893abcef0",
+            "priority": "medium",
+            "schedule": {
+              "kind": "one_time"
+            }
+          }
+        },
+        {
+          "type": "tool-call",
+          "toolCallId": "call_jdejZxOFpMg7t70aIQqbOWLl",
+          "toolName": "create_todo",
+          "input": {
+            "title": "Task D",
+            "description": "Secret prerequisite for Task A.",
+            "parentId": "e9fac094-f5e3-4752-9801-c3a893abcef0",
+            "priority": "medium",
+            "schedule": {
+              "kind": "one_time"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": [
+        {
+          "type": "tool-result",
+          "toolCallId": "call_kuqGQhvoxsM7jQETWxNXXRy2",
+          "toolName": "create_todo",
+          "output": {
+            "type": "json",
+            "value": {
+              "type": "json",
+              "value": {
+                "type": "json",
+                "value": {
+                  "type": "json",
+                  "value": {
+                    "_meta": {
+                      "io.modelcontextprotocol/serverInfo": {
+                        "name": "todo-mcp-2026",
+                        "version": "0.1.0"
+                      }
+                    },
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "{\"ID\":\"7c9f203d-ea4b-4b28-ad10-d9f90a72ee2f\",\"Title\":\"Task B\",\"Description\":\"Secret prerequisite for Task A.\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\\u003cnil\\u003e\",\"ParentID\":\"e9fac094-f5e3-4752-9801-c3a893abcef0\",\"Completed\":false,\"Version\":0}"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "tool-result",
+          "toolCallId": "call_hqwSPhSeqFyIFTYxPnpOWhix",
+          "toolName": "create_todo",
+          "output": {
+            "type": "json",
+            "value": {
+              "type": "json",
+              "value": {
+                "type": "json",
+                "value": {
+                  "type": "json",
+                  "value": {
+                    "_meta": {
+                      "io.modelcontextprotocol/serverInfo": {
+                        "name": "todo-mcp-2026",
+                        "version": "0.1.0"
+                      }
+                    },
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "{\"ID\":\"6717c187-3ed8-403b-9412-a9ccd9d2ab2d\",\"Title\":\"Task C\",\"Description\":\"Secret prerequisite for Task A.\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\\u003cnil\\u003e\",\"ParentID\":\"e9fac094-f5e3-4752-9801-c3a893abcef0\",\"Completed\":false,\"Version\":0}"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "tool-result",
+          "toolCallId": "call_jdejZxOFpMg7t70aIQqbOWLl",
+          "toolName": "create_todo",
+          "output": {
+            "type": "json",
+            "value": {
+              "type": "json",
+              "value": {
+                "type": "json",
+                "value": {
+                  "type": "json",
+                  "value": {
+                    "_meta": {
+                      "io.modelcontextprotocol/serverInfo": {
+                        "name": "todo-mcp-2026",
+                        "version": "0.1.0"
+                      }
+                    },
+                    "content": [
+                      {
+                        "type": "text",
+                        "text": "{\"ID\":\"314b5f6b-82e0-4fe3-ac91-3a07cf181c1f\",\"Title\":\"Task D\",\"Description\":\"Secret prerequisite for Task A.\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\\u003cnil\\u003e\",\"ParentID\":\"e9fac094-f5e3-4752-9801-c3a893abcef0\",\"Completed\":false,\"Version\":0}"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Yes — I created:\n\n- **Task A** as the parent\n  - Task B\n  - Task C\n  - Task D\n\nTheir secret details weren’t included, so they’re saved with generic names and descriptions."
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "nice b is done"
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "tool-call",
+          "toolCallId": "call_JOqQwrhccPLhODzcbf2tkLQy",
+          "toolName": "move_todo",
+          "input": {
+            "todoId": "7c9f203d-ea4b-4b28-ad10-d9f90a72ee2f",
+            "targetListId": "done",
+            "requestState": "",
+            "choice": ""
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": [
+        {
+          "type": "tool-result",
+          "toolCallId": "call_JOqQwrhccPLhODzcbf2tkLQy",
+          "toolName": "move_todo",
+          "output": {
+            "type": "json",
+            "value": {
+              "type": "json",
+              "value": {
+                "type": "json",
+                "value": {
+                  "_meta": {
+                    "io.modelcontextprotocol/serverInfo": {
+                      "name": "todo-mcp-2026",
+                      "version": "0.1.0"
+                    }
+                  },
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "{\"moved\":true}"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Done — **Task B** is marked complete."
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "move a to done as well"
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "tool-call",
+          "toolCallId": "call_8hndOMHf8kKmbakdmi2SL2dM",
+          "toolName": "move_todo",
+          "input": {
+            "todoId": "e9fac094-f5e3-4752-9801-c3a893abcef0",
+            "targetListId": "done",
+            "requestState": "",
+            "choice": ""
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": [
+        {
+          "type": "tool-result",
+          "toolCallId": "call_8hndOMHf8kKmbakdmi2SL2dM",
+          "toolName": "move_todo",
+          "output": {
+            "type": "json",
+            "value": {
+              "type": "json",
+              "value": {
+                "_meta": {
+                  "io.modelcontextprotocol/serverInfo": {
+                    "name": "todo-mcp-2026",
+                    "version": "0.1.0"
+                  }
+                },
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "{\"message\":\"This todo has 2 incomplete subtasks. What should happen?\",\"options\":[\"move_parent_only\",\"move_with_subtasks\",\"cancel\"],\"requestState\":\"eyJPcGVyYXRpb24iOiJtb3ZlX3RvZG8iLCJUb2RvSUQiOiJlOWZhYzA5NC1mNWUzLTQ3NTItOTgwMS1jM2E4OTNhYmNlZjAiLCJUYXJnZXRMaXN0SUQiOiJkb25lIiwiVG9kb1ZlcnNpb24iOjEsIkluY29tcGxldGVTdWJ0YXNrSURzIjpbIjY3MTdjMTg3LTNlZDgtNDAzYi05NDEyLWE5Y2NkOWQyYWIyZCIsIjMxNGI1ZjZiLTgyZTAtNGZlMy1hYzkxLTNhMDdjZjE4MWMxZiJdLCJFeHBpcmVzQXQiOiIyMDI2LTA5LTI3VDE3OjEwOjI4LjM5MDQyMDg2NFoifQ.T7OJkD27QFLIzwHrERNBgEBKj1lv-SXYPmXZqlY_z-U\",\"resultType\":\"input_required\"}"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Task A has **2 incomplete subtasks: C and D**. How should I proceed?\n\n1. **Move Task A only**\n2. **Move Task A and its remaining subtasks**\n3. **Cancel**"
+        }
+      ]
+    },
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "all"
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "tool-call",
+          "toolCallId": "call_UTxm7oEaTNRBBxCGZ8Jj6lZN",
+          "toolName": "move_todo",
+          "input": {
+            "todoId": "e9fac094-f5e3-4752-9801-c3a893abcef0",
+            "targetListId": "done",
+            "requestState": "eyJPcGVyYXRpb24iOiJtb3ZlX3RvZG8iLCJUb2RvSUQiOiJlOWZhYzA5NC1mNWUzLTQ3NTItOTgwMS1jM2E4OTNhYmNlZjAiLCJUYXJldExpc3RJZCI6ImRvbmUiLCJUb2RvVmVyc2lvbiI6MSwiSW5jb21wbGV0ZVN1YnRhc2tJRHMiOlsiNjcxN2MxODctM2VkOC00MDNiLTk0MTItYTljY2Q5ZDJhYjJkIiwiMzE0YjVmNmItODJlMC00ZmUzLWE5YzEtM2EwN2NmMTg1MWMxZiJdLCJFeHBpcmVzQXQiOiIyMDI2LTA5LTI3VDE3OjEwOjI4LjM5MDQyMDg2NFoifQ.T7OJkD27QFLIzwHrERNBgEBKj1lv-SXYPmXZqlY_z-U",
+            "choice": "move_with_subtasks"
+          },
+          "providerOptions": {
+            "openai": {
+              "itemId": "fc_05a71c703421477a006ab94bbda11887d2a6b355384f6fa96c"
+            },
+            "mcpjam": {
+              "serverId": "todo-mcp-server"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": [
+        {
+          "type": "tool-result",
+          "toolCallId": "call_UTxm7oEaTNRBBxCGZ8Jj6lZN",
+          "toolName": "move_todo",
+          "output": {
+            "type": "json",
+            "value": {
+              "_meta": {
+                "io.modelcontextprotocol/serverInfo": {
+                  "name": "todo-mcp-2026",
+                  "version": "0.1.0"
+                }
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "invalid requestState signature"
+                }
+              ],
+              "isError": true
+            }
+          },
+          "result": {
+            "_meta": {
+              "io.modelcontextprotocol/serverInfo": {
+                "name": "todo-mcp-2026",
+                "version": "0.1.0"
+              }
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "invalid requestState signature"
+              }
+            ],
+            "isError": true
+          },
+          "serverId": "todo-mcp-server",
+          "providerOptions": {
+            "mcpjam": {
+              "serverId": "todo-mcp-server"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "tool-call",
+          "toolCallId": "call_9ffXSTMtgNUxl7DpGynEYAHm",
+          "toolName": "move_todo",
+          "input": {
+            "todoId": "e9fac094-f5e3-4752-9801-c3a893abcef0",
+            "targetListId": "done",
+            "requestState": "eyJPcGVyYXRpb24iOiJtb3ZlX3RvZG8iLCJUb2RvSUQiOiJlOWZhYzA5NC1mNWUzLTQ3NTItOTgwMS1jM2E4OTNhYmNlZjAiLCJUYXJnZXRMaXN0SUQiOiJkb25lIiwiVG9kb1ZlcnNpb24iOjEsIkluY29tcGxldGVTdWJ0YXNrSURzIjpbIjY3MTdjMTg3LTNlZDgtNDAzYi05NDEyLWE5Y2NkOWQyYWIyZCIsIjMxNGI1ZjZiLTgyZTAtNGZlMy1hYzkxLTNhMDdjZjE4MWMxZiJdLCJFeHBpcmVzQXQiOiIyMDI2LTA5LTI3VDE3OjEwOjI4LjM5MDQyMDg2NFoifQ.T7OJkD27QFLIzwHrERNBgEBKj1lv-SXYPmXZqlY_z-U",
+            "choice": "move_with_subtasks"
+          },
+          "providerOptions": {
+            "openai": {
+              "itemId": "fc_05a71c703421477a006ab94bc593b887d28c113428d0cba659"
+            },
+            "mcpjam": {
+              "serverId": "todo-mcp-server"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "role": "tool",
+      "content": [
+        {
+          "type": "tool-result",
+          "toolCallId": "call_9ffXSTMtgNUxl7DpGynEYAHm",
+          "toolName": "move_todo",
+          "output": {
+            "type": "json",
+            "value": {
+              "_meta": {
+                "io.modelcontextprotocol/serverInfo": {
+                  "name": "todo-mcp-2026",
+                  "version": "0.1.0"
+                }
+              },
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{\"moved\":true}"
+                }
+              ]
+            }
+          },
+          "result": {
+            "_meta": {
+              "io.modelcontextprotocol/serverInfo": {
+                "name": "todo-mcp-2026",
+                "version": "0.1.0"
+              }
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "{\"moved\":true}"
+              }
+            ]
+          },
+          "serverId": "todo-mcp-server",
+          "providerOptions": {
+            "mcpjam": {
+              "serverId": "todo-mcp-server"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Done — **Task A and all its subtasks (B, C, and D)** have been moved to **Done**."
+        }
+      ]
+    }
+  ]
+}

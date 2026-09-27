@@ -1,0 +1,31 @@
+{
+  "method": "tasks/get",
+  "params": {
+    "taskId": "8471edd5-0570-458b-b695-e1915daaab67",
+    "_meta": {
+      "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+      "io.modelcontextprotocol/clientInfo": {
+        "name": "openai-mcp",
+        "version": "1.0.0"
+      },
+      "io.modelcontextprotocol/clientCapabilities": {
+        "experimental": {
+          "openai/visibility": {
+            "enabled": true
+          }
+        },
+        "extensions": {
+          "io.modelcontextprotocol/ui": {
+            "mimeTypes": [
+              "text/html;profile=mcp-app"
+            ]
+          },
+          "io.modelcontextprotocol/skills": {},
+          "io.modelcontextprotocol/tasks": {}
+        }
+      }
+    }
+  },
+  "jsonrpc": "2.0",
+  "id": 19
+}

@@ -1,0 +1,91 @@
+{
+  "artifact": "Todo MCP 2026 article evidence",
+  "generatedAt": "2026-09-27",
+  "connection": {
+    "status": "verified_in_mcpjam",
+    "endpoint": "http://127.0.0.1:8080/mcp",
+    "transport": "Streamable HTTP",
+    "protocolVersion": "2026-07-28"
+  },
+  "evidence": [
+    {
+      "id": "01-list-todos-stateless-request",
+      "source": "MCPJam Playground",
+      "status": "verified_in_mcpjam",
+      "request": {"tool": "list_todos", "arguments": {}},
+      "response": {"shape": "array of Todo records", "note": "Live result displayed Todo fields including ID, Title, ListID, Priority, Completed, and Version."},
+      "capture": "inspector/01-list-todos-request.png"
+    },
+    {
+      "id": "02-discovery-cache-response",
+      "source": "live server/discover response",
+      "status": "verified_live_http",
+      "response": {
+        "resultType": "complete",
+        "cacheScope": "public",
+        "ttlMs": 0,
+        "supportedVersions": ["2026-07-28", "2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05"]
+      },
+      "note": "The current server advertises public cache scope. A five-minute tools/list TTL is an article recommendation, not the current live response.",
+      "snippet": "code/02-discovery-cache.go.txt"
+    },
+    {
+      "id": "03-import-todos-request",
+      "source": "live Streamable HTTP request through the MCPJam port-forward",
+      "status": "verified_live_http",
+      "request": {"tool": "import_todos", "arguments": {"items": [{"title": "Live import verification A", "completed": false, "priority": "medium"}, {"title": "Live import verification B", "completed": false, "priority": "low"}]}},
+      "template": "inspector/03-import-request.json"
+    },
+    {
+      "id": "04-task-creation-response",
+      "source": "live import_todos response",
+      "status": "verified_live_http",
+      "response": {"resultType": "task", "taskId": "8a204b75-e1d2-4abf-be71-7a66b096348d", "status": "working", "pollIntervalMs": 500, "ttlMs": 600000}
+    },
+    {
+      "id": "05-task-poll-request",
+      "source": "live MCP Tasks extension request",
+      "status": "verified_live_http",
+      "request": {"method": "tasks/get", "params": {"taskId": "8a204b75-e1d2-4abf-be71-7a66b096348d"}},
+      "template": "inspector/05-task-poll-request.json"
+    },
+    {
+      "id": "06-task-progress-response",
+      "source": "live persisted Task state",
+      "status": "verified_live_http",
+      "response": {"task": {"taskId": "03911c48-7529-45ec-ab47-205d71b4a818", "status": "working", "statusMessage": "Queued"}},
+      "completionWitness": {"taskId": "8a204b75-e1d2-4abf-be71-7a66b096348d", "status": "completed", "statusMessage": "Completed", "result": {"imported": 2, "skipped": 0, "failed": 0}}
+    },
+    {
+      "id": "07-mrtr-input-required-response",
+      "source": "live Streamable HTTP request",
+      "status": "verified_live_http",
+      "request": {"tool": "move_todo", "arguments": {"todoId": "c17add3b-ddc0-44ba-b8e3-c2918fe859ac", "targetListId": "done"}},
+      "response": {"resultType": "input_required", "message": "This todo has 2 incomplete subtasks. What should happen?", "options": ["move_parent_only", "move_with_subtasks", "cancel"], "requestState": "live signed token captured but intentionally omitted from this committed manifest"},
+      "template": "inspector/07-move-to-done-request.json"
+    },
+    {
+      "id": "08-conceptual-decoded-request-state",
+      "source": "code illustration only",
+      "status": "conceptual_not_live_token",
+      "payload": {"operation": "move_todo", "todoId": "todo_123", "targetListId": "done", "todoVersion": 4, "incompleteSubtaskIds": ["todo_124", "todo_125"], "expiresAt": "2026-09-27T12:00:00Z"},
+      "snippet": "code/08-request-state-payload.json"
+    },
+    {
+      "id": "09-mrtr-retry-request",
+      "source": "live Streamable HTTP retry",
+      "status": "verified_live_http",
+      "request": {"tool": "move_todo", "arguments": {"todoId": "c17add3b-ddc0-44ba-b8e3-c2918fe859ac", "targetListId": "done", "choice": "move_parent_only", "requestState": "live signed token"}},
+      "response": {"moved": true},
+      "template": "inspector/09-mrtr-retry-request.json"
+    },
+    {
+      "id": "10-plan-my-day-full-orchestration",
+      "source": "MCPJam Playground",
+      "status": "not_yet_captured",
+      "prompt": {"name": "plan_my_day", "arguments": {"date": "2026-09-28", "availableMinutes": 480}},
+      "verifiedPromptInstruction": "Call list_todos; inspect overdue and due-today work; prioritize high priority work; fit it into availableMinutes; show the proposed plan before changing data; then make exactly one bulk_update_todos call after approval.",
+      "remainingVerification": "MCPJam's stale Inspector connection still displays its pre-rollout input schema. Reconnect the server in MCPJam, then run the prompt with a model and approve the proposed plan to capture the model-mediated trace."
+    }
+  ]
+}

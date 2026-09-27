@@ -1,0 +1,12 @@
+{
+  "jsonrpc": "2.0",
+  "id": 7,
+  "method": "tools/call",
+  "params": {
+    "name": "move_todo",
+    "arguments": {
+      "todoId": "REPLACE_WITH_PUBLISH_MCP_ARTICLE_ID",
+      "targetListId": "done"
+    }
+  }
+}

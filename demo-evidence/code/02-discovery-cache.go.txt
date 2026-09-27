@@ -1,0 +1,12 @@
+// The official Go SDK sets list-result cache defaults to public. A production
+// demo may attach this middleware to return a five-minute discovery TTL.
+//
+// server.AddSendingMiddleware(func(next mcp.MethodHandler) mcp.MethodHandler {
+//   return func(ctx context.Context, method string, req mcp.Request) (mcp.Result, error) {
+//     result, err := next(ctx, method, req)
+//     if method == "tools/list" { /* result.ttlMs = 300000; cacheScope = public */ }
+//     return result, err
+//   }
+// })
+//
+// The current server's `server/discover` response declares `cacheScope: public`.

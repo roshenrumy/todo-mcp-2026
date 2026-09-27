@@ -1,0 +1,15 @@
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "tools/call",
+  "params": {
+    "name": "import_todos",
+    "arguments": {
+      "items": [
+        {"title": "Imported demo item A", "completed": false, "priority": "medium"},
+        {"title": "Imported demo item B", "completed": false, "priority": "high"},
+        {"title": "Imported demo item C", "completed": true, "priority": "low"}
+      ]
+    }
+  }
+}

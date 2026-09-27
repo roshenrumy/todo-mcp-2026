@@ -1,0 +1,351 @@
+[
+  {
+    "timestamp": "2026-09-27T14:45:43.784Z",
+    "source": "mcp-server",
+    "serverId": "Localhost:8080",
+    "direction": "RECEIVE",
+    "method": "result",
+    "payload": {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": {
+        "_meta": {
+          "io.modelcontextprotocol/serverInfo": {
+            "name": "todo-mcp-2026",
+            "version": "0.1.0"
+          }
+        },
+        "resultType": "complete",
+        "ttlMs": 0,
+        "cacheScope": "public",
+        "tools": [
+          {
+            "description": "Apply independent updates in a bounded SQLite transaction",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "updates": {
+                  "type": [
+                    "null",
+                    "array"
+                  ],
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "todoId": {
+                        "type": "string"
+                      },
+                      "changes": {
+                        "type": "object",
+                        "properties": {
+                          "priority": {
+                            "type": [
+                              "null",
+                              "string"
+                            ]
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "todoId",
+                      "changes"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "updates"
+              ],
+              "additionalProperties": false
+            },
+            "name": "bulk_update_todos"
+          },
+          {
+            "description": "Create one-time or recurring todo",
+            "inputSchema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "title",
+                "schedule"
+              ],
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "listId": {
+                  "type": "string"
+                },
+                "priority": {
+                  "enum": [
+                    "low",
+                    "medium",
+                    "high"
+                  ]
+                },
+                "schedule": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/$defs/oneTime"
+                    },
+                    {
+                      "$ref": "#/$defs/recurring"
+                    }
+                  ]
+                }
+              },
+              "$defs": {
+                "oneTime": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "kind",
+                    "dueAt"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "const": "one_time"
+                    },
+                    "dueAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                },
+                "recurring": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "kind",
+                    "recurrence"
+                  ],
+                  "properties": {
+                    "kind": {
+                      "const": "recurring"
+                    },
+                    "recurrence": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "frequency",
+                        "daysOfWeek"
+                      ],
+                      "properties": {
+                        "frequency": {
+                          "const": "weekly"
+                        },
+                        "daysOfWeek": {
+                          "type": "array",
+                          "items": {
+                            "enum": [
+                              "monday",
+                              "tuesday",
+                              "wednesday",
+                              "thursday",
+                              "friday",
+                              "saturday",
+                              "sunday"
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "name": "create_todo"
+          },
+          {
+            "description": "Queue a durable asynchronous Todo import",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "items": {
+                  "type": [
+                    "null",
+                    "array"
+                  ],
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "title": {
+                        "type": "string"
+                      },
+                      "completed": {
+                        "type": "boolean"
+                      },
+                      "priority": {
+                        "type": "string"
+                      },
+                      "description": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "title",
+                      "completed",
+                      "priority",
+                      "description"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "items"
+              ],
+              "additionalProperties": false
+            },
+            "name": "import_todos"
+          },
+          {
+            "description": "List todos",
+            "inputSchema": {
+              "type": "object",
+              "additionalProperties": false
+            },
+            "name": "list_todos"
+          },
+          {
+            "description": "Move a todo; parent moves to Done request a decision",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "todoId": {
+                  "type": "string"
+                },
+                "targetListId": {
+                  "type": "string"
+                },
+                "requestState": {
+                  "type": "string"
+                },
+                "choice": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "todoId",
+                "targetListId"
+              ],
+              "additionalProperties": false
+            },
+            "name": "move_todo"
+          },
+          {
+            "description": "Request cancellation of an import task",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "taskId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "taskId"
+              ],
+              "additionalProperties": false
+            },
+            "name": "tasks_cancel"
+          },
+          {
+            "description": "Get a durable import task",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "taskId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "taskId"
+              ],
+              "additionalProperties": false
+            },
+            "name": "tasks_get"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "timestamp": "2026-09-27T14:45:43.784Z",
+    "source": "http",
+    "serverId": "Localhost:8080",
+    "direction": "HTTP",
+    "method": "POST /mcp",
+    "payload": {
+      "serverId": "Localhost:8080",
+      "request": {
+        "method": "POST",
+        "url": "http://localhost:8080/mcp",
+        "headers": {
+          "accept": "application/json, text/event-stream",
+          "content-type": "application/json",
+          "mcp-method": "tools/list",
+          "mcp-protocol-version": "2026-07-28"
+        }
+      },
+      "response": {
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "cache-control": "no-cache, no-transform",
+          "content-type": "application/json",
+          "date": "Sun, 27 Sep 2026 14:45:43 GMT",
+          "transfer-encoding": "chunked",
+          "x-demo-instance": "todo-mcp-7c699b9cfc-sgt6h"
+        }
+      },
+      "durationMs": 34,
+      "bodyValues": {
+        "method": "tools/list",
+        "protocolVersion": "2026-07-28"
+      }
+    }
+  },
+  {
+    "timestamp": "2026-09-27T14:45:43.750Z",
+    "source": "mcp-server",
+    "serverId": "Localhost:8080",
+    "direction": "SEND",
+    "method": "tools/list",
+    "payload": {
+      "method": "tools/list",
+      "jsonrpc": "2.0",
+      "id": 1,
+      "params": {
+        "_meta": {
+          "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+          "io.modelcontextprotocol/clientInfo": {
+            "name": "mcpjam-inspector",
+            "version": "0.0.0"
+          },
+          "io.modelcontextprotocol/clientCapabilities": {
+            "elicitation": {
+              "form": {},
+              "url": {}
+            },
+            "extensions": {
+              "io.modelcontextprotocol/enterprise-managed-authorization": {},
+              "io.modelcontextprotocol/skills": {},
+              "io.modelcontextprotocol/ui": {
+                "mimeTypes": [
+                  "text/html;profile=mcp-app"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+]

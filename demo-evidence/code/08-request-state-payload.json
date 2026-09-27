@@ -1,0 +1,8 @@
+{
+  "operation": "move_todo",
+  "todoId": "todo_123",
+  "targetListId": "done",
+  "todoVersion": 4,
+  "incompleteSubtaskIds": ["todo_124", "todo_125"],
+  "expiresAt": "2026-09-27T12:00:00Z"
+}

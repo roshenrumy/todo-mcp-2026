@@ -1,0 +1,707 @@
+[
+  {
+    "timestamp": "2026-09-27T18:00:20.793Z",
+    "source": "mcp-server",
+    "serverId": "127",
+    "direction": "RECEIVE",
+    "method": "result",
+    "payload": {
+      "jsonrpc": "2.0",
+      "id": 18,
+      "result": {
+        "_meta": {
+          "io.modelcontextprotocol/serverInfo": {
+            "name": "todo-mcp-2026",
+            "version": "0.1.0"
+          }
+        },
+        "resultType": "complete",
+        "ttlMs": 0,
+        "cacheScope": "public",
+        "tools": [
+          {
+            "description": "Apply independent updates in a bounded SQLite transaction",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "updates": {
+                  "type": [
+                    "null",
+                    "array"
+                  ],
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "todoId": {
+                        "type": "string"
+                      },
+                      "changes": {
+                        "type": "object",
+                        "properties": {
+                          "priority": {
+                            "type": [
+                              "null",
+                              "string"
+                            ]
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "todoId",
+                      "changes"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "updates"
+              ],
+              "additionalProperties": false
+            },
+            "name": "bulk_update_todos"
+          },
+          {
+            "description": "Create one-time or recurring todo",
+            "inputSchema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "title",
+                "schedule"
+              ],
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "listId": {
+                  "type": "string"
+                },
+                "parentId": {
+                  "type": "string",
+                  "description": "Optional parent Todo ID for a subtask"
+                },
+                "priority": {
+                  "enum": [
+                    "low",
+                    "medium",
+                    "high"
+                  ]
+                },
+                "schedule": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "properties": {
+                    "kind": {
+                      "enum": [
+                        "one_time",
+                        "recurring"
+                      ]
+                    },
+                    "dueAt": {
+                      "type": "string"
+                    },
+                    "recurrence": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            },
+            "name": "create_todo"
+          },
+          {
+            "description": "Queue a durable asynchronous Todo import",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "items": {
+                  "type": [
+                    "null",
+                    "array"
+                  ],
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "title": {
+                        "type": "string"
+                      },
+                      "completed": {
+                        "type": "boolean"
+                      },
+                      "priority": {
+                        "type": "string"
+                      },
+                      "description": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "title",
+                      "completed",
+                      "priority"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "items"
+              ],
+              "additionalProperties": false
+            },
+            "name": "import_todos"
+          },
+          {
+            "description": "List todos",
+            "inputSchema": {
+              "type": "object",
+              "additionalProperties": false
+            },
+            "name": "list_todos"
+          },
+          {
+            "description": "Move or complete a todo. Always call this tool when a user asks to move or complete a todo; do not ask a manual follow-up first. If moving a parent to done with incomplete subtasks, this tool returns input_required with a signed requestState and options. Present that server response to the user, then retry this same tool with their choice and requestState.",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "todoId": {
+                  "type": "string"
+                },
+                "targetListId": {
+                  "type": "string"
+                },
+                "requestState": {
+                  "type": "string"
+                },
+                "choice": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "todoId",
+                "targetListId"
+              ],
+              "additionalProperties": false
+            },
+            "name": "move_todo"
+          },
+          {
+            "description": "Request cancellation of an import task",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "taskId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "taskId"
+              ],
+              "additionalProperties": false
+            },
+            "name": "tasks_cancel"
+          },
+          {
+            "description": "Get a durable import task",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "taskId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "taskId"
+              ],
+              "additionalProperties": false
+            },
+            "name": "tasks_get"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "timestamp": "2026-09-27T18:00:20.793Z",
+    "source": "http",
+    "serverId": "127",
+    "direction": "HTTP",
+    "method": "POST /mcp",
+    "payload": {
+      "serverId": "127",
+      "request": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8080/mcp",
+        "headers": {
+          "accept": "application/json, text/event-stream",
+          "content-type": "application/json",
+          "mcp-method": "tools/list",
+          "mcp-protocol-version": "2026-07-28"
+        }
+      },
+      "response": {
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "cache-control": "no-cache, no-transform",
+          "content-type": "application/json",
+          "date": "Sun, 27 Sep 2026 18:00:20 GMT",
+          "transfer-encoding": "chunked",
+          "x-demo-instance": "todo-mcp-86c4b6f6d6-9hlss"
+        }
+      },
+      "durationMs": 4,
+      "bodyValues": {
+        "method": "tools/list",
+        "protocolVersion": "2026-07-28"
+      }
+    }
+  },
+  {
+    "timestamp": "2026-09-27T18:00:20.786Z",
+    "source": "mcp-server",
+    "serverId": "127",
+    "direction": "SEND",
+    "method": "tools/list",
+    "payload": {
+      "method": "tools/list",
+      "jsonrpc": "2.0",
+      "id": 18,
+      "params": {
+        "_meta": {
+          "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+          "io.modelcontextprotocol/clientInfo": {
+            "name": "mcpjam-inspector",
+            "version": "0.0.0"
+          },
+          "io.modelcontextprotocol/clientCapabilities": {
+            "elicitation": {
+              "form": {},
+              "url": {}
+            },
+            "extensions": {
+              "io.modelcontextprotocol/enterprise-managed-authorization": {},
+              "io.modelcontextprotocol/skills": {},
+              "io.modelcontextprotocol/ui": {
+                "mimeTypes": [
+                  "text/html;profile=mcp-app"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "timestamp": "2026-09-27T18:00:20.777Z",
+    "source": "mcp-server",
+    "serverId": "127",
+    "direction": "RECEIVE",
+    "method": "result",
+    "payload": {
+      "jsonrpc": "2.0",
+      "id": 17,
+      "result": {
+        "_meta": {
+          "io.modelcontextprotocol/serverInfo": {
+            "name": "todo-mcp-2026",
+            "version": "0.1.0"
+          }
+        },
+        "content": [
+          {
+            "type": "text",
+            "text": "[{\"ID\":\"2e0e21a3-3721-45b9-9897-bfdc7e85ef85\",\"Title\":\"Build my website\",\"Description\":\"Portfolio website\",\"ListID\":\"done\",\"Priority\":\"medium\",\"DueAt\":\"2025-11-01\",\"ParentID\":\"\",\"Completed\":true,\"Version\":2},{\"ID\":\"56bf6154-20f4-4893-b8e7-c7d8ea867cba\",\"Title\":\"Point my domain\",\"Description\":\"\",\"ListID\":\"done\",\"Priority\":\"medium\",\"DueAt\":\"2025-11-01\",\"ParentID\":\"2e0e21a3-3721-45b9-9897-bfdc7e85ef85\",\"Completed\":true,\"Version\":2},{\"ID\":\"d042ee7f-18b6-4d06-a274-19733fc97d3f\",\"Title\":\"Design the website\",\"Description\":\"\",\"ListID\":\"done\",\"Priority\":\"medium\",\"DueAt\":\"2025-11-01\",\"ParentID\":\"2e0e21a3-3721-45b9-9897-bfdc7e85ef85\",\"Completed\":true,\"Version\":4},{\"ID\":\"b0585f86-e758-4f58-8da0-48877dd48f6c\",\"Title\":\"Build the website\",\"Description\":\"\",\"ListID\":\"done\",\"Priority\":\"medium\",\"DueAt\":\"2025-11-01\",\"ParentID\":\"2e0e21a3-3721-45b9-9897-bfdc7e85ef85\",\"Completed\":true,\"Version\":4},{\"ID\":\"117c0007-a6f3-442c-8223-738e7d695e12\",\"Title\":\"Host the website\",\"Description\":\"\",\"ListID\":\"done\",\"Priority\":\"medium\",\"DueAt\":\"2025-11-01\",\"ParentID\":\"2e0e21a3-3721-45b9-9897-bfdc7e85ef85\",\"Completed\":true,\"Version\":2},{\"ID\":\"5fc625e6-2b69-406b-b4b9-f5aa73a52d3d\",\"Title\":\"Practice Pods, Deployments, and workload management\",\"Description\":\"Create and update Pods, Deployments, ReplicaSets, DaemonSets, Jobs, and CronJobs. Practice scaling, rolling updates, rollbacks, labels, selectors, and probes.\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"2026-10-10T18:00:00Z\",\"ParentID\":\"\",\"Completed\":false,\"Version\":2},{\"ID\":\"a94068d1-962a-41b3-ad31-97b45e7809ca\",\"Title\":\"Practice Kubernetes networking and Services\",\"Description\":\"Work through Services, DNS, Ingress, NetworkPolicies, service discovery, and troubleshooting connectivity between Pods and Services.\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"2026-10-15T18:00:00Z\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"270e9af3-9170-4aac-af3b-c3351005cc34\",\"Title\":\"Practice cluster maintenance and troubleshooting\",\"Description\":\"Work through node maintenance, cordon and drain, upgrades, backups, logs, events, resource inspection, and diagnosing failed Pods, nodes, and control-plane components.\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"2026-10-28T18:00:00Z\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"2ca81285-af79-4a68-9cb3-da6dd4eee3a5\",\"Title\":\"Set up Kubernetes admin exam study environment\",\"Description\":\"Install or verify kubectl, a local Kubernetes cluster, and a practice environment. Review the exam domains and create a study checklist.\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"2026-10-01T18:00:00Z\",\"ParentID\":\"\",\"Completed\":false,\"Version\":2},{\"ID\":\"66861fe2-85ae-481e-b7de-f9c315513f78\",\"Title\":\"Complete final review before the Kubernetes admin exam\",\"Description\":\"Review weak areas, command shortcuts, troubleshooting workflows, and exam strategy. Complete a final light lab and prepare your environment for the November 30 exam.\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"2026-11-27T18:00:00Z\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"28012e11-5e2e-4910-90d8-b5135e2d9b0c\",\"Title\":\"Practice storage and data persistence\",\"Description\":\"Study and practice PersistentVolumes, PersistentVolumeClaims, StorageClasses, access modes, and mounting storage into workloads.\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"2026-10-20T18:00:00Z\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"c89b180a-f4e2-4c47-ada2-e9ccd5153cc2\",\"Title\":\"Study Kubernetes security and access control\",\"Description\":\"Practice authentication concepts, RBAC, Roles, ClusterRoles, RoleBindings, ServiceAccounts, Secrets, security contexts, and Pod security settings.\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"2026-10-24T18:00:00Z\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"70032231-1429-4afd-8e4f-c1e5a108ae7c\",\"Title\":\"Complete timed Kubernetes administrator lab practice\",\"Description\":\"Run a realistic hands-on lab covering cluster operations, workloads, networking, storage, security, and troubleshooting under time limits.\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"2026-11-03T18:00:00Z\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"d937b30d-846d-47d5-9baa-35e3fab928e6\",\"Title\":\"Take a full Kubernetes administrator mock exam\",\"Description\":\"Complete a timed mock exam without notes. Record every missed or slow task and revisit the relevant Kubernetes documentation and commands.\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"2026-11-10T18:00:00Z\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"306fd645-7f27-476f-a2ee-6f41403f6a0b\",\"Title\":\"Study Kubernetes cluster architecture and core concepts\",\"Description\":\"Review control plane components, worker nodes, API server, scheduler, controller manager, kubelet, container runtime, and namespaces. Practice inspecting cluster components.\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"2026-10-05T18:00:00Z\",\"ParentID\":\"\",\"Completed\":false,\"Version\":2},{\"ID\":\"e9fac094-f5e3-4752-9801-c3a893abcef0\",\"Title\":\"Task A\",\"Description\":\"Parent task. Secret details withheld by user.\",\"ListID\":\"done\",\"Priority\":\"medium\",\"DueAt\":\"\\u003cnil\\u003e\",\"ParentID\":\"\",\"Completed\":true,\"Version\":2},{\"ID\":\"6717c187-3ed8-403b-9412-a9ccd9d2ab2d\",\"Title\":\"Task C\",\"Description\":\"Secret prerequisite for Task A.\",\"ListID\":\"done\",\"Priority\":\"medium\",\"DueAt\":\"\\u003cnil\\u003e\",\"ParentID\":\"e9fac094-f5e3-4752-9801-c3a893abcef0\",\"Completed\":true,\"Version\":2},{\"ID\":\"314b5f6b-82e0-4fe3-ac91-3a07cf181c1f\",\"Title\":\"Task D\",\"Description\":\"Secret prerequisite for Task A.\",\"ListID\":\"done\",\"Priority\":\"medium\",\"DueAt\":\"\\u003cnil\\u003e\",\"ParentID\":\"e9fac094-f5e3-4752-9801-c3a893abcef0\",\"Completed\":true,\"Version\":2},{\"ID\":\"7c9f203d-ea4b-4b28-ad10-d9f90a72ee2f\",\"Title\":\"Task B\",\"Description\":\"Secret prerequisite for Task A.\",\"ListID\":\"done\",\"Priority\":\"medium\",\"DueAt\":\"\\u003cnil\\u003e\",\"ParentID\":\"e9fac094-f5e3-4752-9801-c3a893abcef0\",\"Completed\":true,\"Version\":3},{\"ID\":\"625a99ae-ca0f-438d-a340-9b419d8187a5\",\"Title\":\"File import demo 01\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"d66648a8-4959-459d-a4c3-93c25c3df030\",\"Title\":\"File import demo 02\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"847169ff-19fc-41a6-9f94-2eabb4caff70\",\"Title\":\"File import demo 03\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"ba8aae21-e691-49f6-b907-eeb2887b683d\",\"Title\":\"File import demo 04\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"9a58d198-bce5-40a2-8005-d600ebdb3986\",\"Title\":\"File import demo 05\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"09bd0f39-d2db-41d8-bbc8-67feabe3cf0d\",\"Title\":\"File import demo 06\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"351dbb24-5673-49a2-95db-36ea4c69b95d\",\"Title\":\"File import demo 07\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"044d1878-1c32-46d0-880a-b50d88430d2c\",\"Title\":\"File import demo 08\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"d2b21307-73a7-4ec1-97a9-8981ddbaeb26\",\"Title\":\"File import demo 09\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"a924cb77-18b7-44d8-9925-49c82bb4a233\",\"Title\":\"File import demo 10\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"88865f3c-b92a-4eb0-a5d5-9e451d251907\",\"Title\":\"File import demo 11\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"5d49ed7d-e4be-4238-bae4-722e132c9a1e\",\"Title\":\"File import demo 12\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"ebb47b46-1c19-4d1e-be99-dc455a2c5021\",\"Title\":\"File import demo 13\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"d918acd4-0f06-4b24-bfc0-121839d0a3d5\",\"Title\":\"File import demo 14\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"6b22f2d3-343b-4b0d-bfc7-885f3cb1d08d\",\"Title\":\"File import demo 15\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"33d955af-fb70-4fb1-803e-335fc3d9d06d\",\"Title\":\"File import demo 01\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"84fdec4c-73aa-4480-a3b8-017ad180b5af\",\"Title\":\"File import demo 02\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"920a6548-4cee-4e82-9fbb-1716aac5516e\",\"Title\":\"File import demo 03\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"78d4019f-48ec-4161-af2f-ece7348af219\",\"Title\":\"File import demo 04\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"f9a45488-58e9-4448-8fcb-2801488a1847\",\"Title\":\"File import demo 05\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"26b53e42-330b-48dc-8580-73b996ca1728\",\"Title\":\"File import demo 06\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"f5303d82-c08a-443d-b521-f949438201ff\",\"Title\":\"File import demo 07\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"5de5ae35-95b7-4c1a-8d00-c5cf8d1f91a6\",\"Title\":\"File import demo 08\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"ba1f01b6-6d78-4d11-bae3-ce4344f6ce7b\",\"Title\":\"File import demo 09\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"b465d8c1-75dc-4ff9-94c5-63248ffee30a\",\"Title\":\"File import demo 10\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"947573b1-3667-420d-9e53-0fbb7fed54f1\",\"Title\":\"File import demo 11\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"ab33bbd6-4222-48bf-9a94-51c7d751d81f\",\"Title\":\"File import demo 12\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"2a007364-cde6-4ecc-8126-72546a77fcfd\",\"Title\":\"File import demo 13\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"4987dc00-3db9-4e71-890d-1e99b4899e7c\",\"Title\":\"File import demo 14\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"a996a0ed-01cf-4a74-87fd-95b135f85d35\",\"Title\":\"File import demo 15\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"505dda9c-3aab-40c0-98ab-aebcdb37cd77\",\"Title\":\"Wire-shape test\",\"Description\":\"\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"88c02f17-9ba4-4b5f-a82d-5ff6beb8b57c\",\"Title\":\"Tasks wire verification\",\"Description\":\"\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"100451ac-bbdd-4fa1-b85e-88b18c4a2f9c\",\"Title\":\"File import demo 01\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"40a62e17-c171-4d9a-a990-14c68d30cd53\",\"Title\":\"File import demo 02\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"2c268c41-d976-41af-9e38-6fc4b6951abf\",\"Title\":\"File import demo 03\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"871890bb-89a8-4ffc-a3fc-fde228763e79\",\"Title\":\"File import demo 04\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"fabe5898-d963-459e-9ebc-df0b42c27fc3\",\"Title\":\"File import demo 05\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"7f2dbf24-f021-4b95-9e18-761569a4d013\",\"Title\":\"File import demo 06\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"ef3119ff-6b97-4b79-b616-32b59e6ac0a9\",\"Title\":\"File import demo 07\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"a5e5fa43-5dbe-47ef-b2ab-07d479a51c9a\",\"Title\":\"File import demo 08\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"aa7ac44d-4228-4650-af1e-3211d2bf1713\",\"Title\":\"File import demo 09\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"0727730a-d1f7-4894-bbe4-694f4c42cfc7\",\"Title\":\"File import demo 10\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"45a6a807-f555-4572-9ce2-a00f3fafef77\",\"Title\":\"File import demo 11\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"d8dcc049-1843-4426-991d-87f06864ed41\",\"Title\":\"File import demo 12\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"6daba731-2cf4-400a-8107-65767cb4791d\",\"Title\":\"File import demo 13\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"7529ac1e-ef72-4645-b77f-cbf880582301\",\"Title\":\"File import demo 14\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"db992bf6-f322-433c-95e6-e237940b9d4c\",\"Title\":\"File import demo 15\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"338d43f2-7df4-4454-a0b3-16fdd606e52f\",\"Title\":\"File import demo 01\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"5781d04e-981f-4d56-becc-c89737f317b4\",\"Title\":\"File import demo 02\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"66168b0a-013c-499a-ae99-969b403bca32\",\"Title\":\"File import demo 03\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"c6a0eae3-7d5c-4a7a-b06a-7779c8b88365\",\"Title\":\"File import demo 04\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"1ec19818-ecb1-4d3f-bc18-147a8168ee8e\",\"Title\":\"File import demo 05\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"b654e584-7d8c-4d45-99c5-bc89dee34227\",\"Title\":\"File import demo 06\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"e6cba4b1-adcd-4556-86ce-f69219fd3944\",\"Title\":\"File import demo 07\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"a1f4474e-c387-438b-a104-05971a764982\",\"Title\":\"File import demo 08\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"1dbfed15-d10a-4a79-9129-3e37dddea344\",\"Title\":\"File import demo 09\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"aab64474-b9e9-4b8c-86bc-7de62ca68085\",\"Title\":\"File import demo 10\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"90aa35be-f2fa-4fab-b798-8a78a51c05c0\",\"Title\":\"File import demo 11\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"eb3ffb6a-aba6-486c-a726-8c723b52d951\",\"Title\":\"File import demo 12\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"82d756c8-522c-4a5e-8b09-9137dceebf8e\",\"Title\":\"File import demo 13\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"3ff54db8-6a17-4bce-a261-d31fff1a8239\",\"Title\":\"File import demo 14\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"835a749e-c228-45a0-ba17-7effa44465af\",\"Title\":\"File import demo 15\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"ca4aa7ae-f350-4c89-9b0a-179eb87bb03a\",\"Title\":\"File import demo 01\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"219a93dd-bb72-422e-a6e7-d4b68cc5eaaf\",\"Title\":\"File import demo 02\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"4fba501c-3650-4271-a237-aa159586ce14\",\"Title\":\"File import demo 03\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"91f33d82-447a-40a7-b683-b2c4ce954443\",\"Title\":\"File import demo 04\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"a41e29e1-ecfc-4db6-b887-6e5ebddc24c1\",\"Title\":\"File import demo 05\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"63eb5170-e6fd-44a2-aad0-771705250d96\",\"Title\":\"File import demo 06\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"7f02216e-181e-4ad9-9223-2ff4d4e23558\",\"Title\":\"File import demo 07\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"7f29e6e2-b22a-4a8e-86a9-c144c11a806a\",\"Title\":\"File import demo 08\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"861148e2-eabd-4740-aefc-599fe4084906\",\"Title\":\"File import demo 09\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"25783962-4889-4149-a87f-e963ed60917c\",\"Title\":\"File import demo 10\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"4099c549-247d-4339-a29d-49c24aeee6ec\",\"Title\":\"File import demo 11\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"c6c5e54e-75fa-44c0-abd6-c7d2cc6eae98\",\"Title\":\"File import demo 12\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"9ec7135e-7bfe-45d0-95e4-7ec3f28a548b\",\"Title\":\"File import demo 13\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"aaa0dcaf-b06b-4ab4-94f9-0cdca7c2792c\",\"Title\":\"File import demo 14\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"fa4f4ce7-6dbe-434c-b56e-607225813833\",\"Title\":\"File import demo 15\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"0e0eb0d5-39be-4bc6-9d5a-889138d18a0b\",\"Title\":\"File import demo 01\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"73479e4b-d1da-4dda-8601-b1ce9fe8b16d\",\"Title\":\"File import demo 02\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"b89da7ab-010a-49d1-8933-a931fabf28aa\",\"Title\":\"File import demo 03\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"76ab71ff-d9c9-4df1-a758-46fea90ce6f9\",\"Title\":\"File import demo 04\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"470b5248-258e-484e-94ee-fb241d0285e2\",\"Title\":\"File import demo 05\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"c0561b87-a88c-465a-b91e-4423c5683f4d\",\"Title\":\"File import demo 06\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"1b8f6a6f-0dc7-48f6-bd94-3f1b835afec3\",\"Title\":\"File import demo 07\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"d8ef2eb9-23e3-4f3d-be8c-be05a9f2508e\",\"Title\":\"File import demo 08\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"bd8113f1-1c5e-4a87-b2b3-b788296bfbf5\",\"Title\":\"File import demo 09\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"8424afaa-9545-4ca4-8012-0c992b7e9800\",\"Title\":\"File import demo 10\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"9cba395b-41bd-4d53-b268-2964410b2dae\",\"Title\":\"File import demo 11\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"5d782459-eddb-4162-885e-d615c4a95f01\",\"Title\":\"File import demo 12\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"e1feeb23-f187-49f8-a2f5-021e5e579a9a\",\"Title\":\"File import demo 13\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"dad2fb24-3357-423f-ae57-8282842da249\",\"Title\":\"File import demo 14\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"fb9fbeb7-3f7d-4e2a-b2bd-22141c66a438\",\"Title\":\"File import demo 15\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"60e208f7-5867-4b2d-b4dd-a3b2d8460e6e\",\"Title\":\"File import demo 01\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"5e50bc06-c486-4d3c-b2a5-2b9151a28e5a\",\"Title\":\"File import demo 02\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"3b8675fc-dcf9-4c22-b521-5e6ebc12dbd3\",\"Title\":\"File import demo 03\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"c5420636-a2ca-4a58-8942-38a7fb745ec6\",\"Title\":\"File import demo 04\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"5cb5bf2e-6b5c-4068-b771-30797a8d853d\",\"Title\":\"File import demo 05\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"774ba55b-206f-430f-b255-d433a25bebcf\",\"Title\":\"File import demo 06\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"7e60b09a-c7aa-461c-8bcd-b169f4f22217\",\"Title\":\"File import demo 07\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"67a14ced-352a-44b1-a5e1-93ae4e448247\",\"Title\":\"File import demo 08\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"4e85ee52-2ab9-44ba-af75-93993c9385b0\",\"Title\":\"File import demo 09\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"95a2ba19-1f31-40b1-8751-02facf149886\",\"Title\":\"File import demo 10\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"bcd5f4e3-8f4a-4ac5-a7b3-fe45b42aecd2\",\"Title\":\"File import demo 11\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"748211b5-4a9f-4a51-8b81-6d8930f28a89\",\"Title\":\"File import demo 12\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"98761927-2593-4bf7-a537-8b215e7ee872\",\"Title\":\"File import demo 13\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"ddb5d628-996d-4693-9058-0a6543ebe288\",\"Title\":\"File import demo 14\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"01e607e6-320c-4d99-97fb-7232b97eaecc\",\"Title\":\"File import demo 15\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"a2fd063c-e57d-4381-96af-adfa5a9fd553\",\"Title\":\"File import demo 01\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"a3700d7a-9dd3-455c-b22f-1b5dfca262fb\",\"Title\":\"File import demo 02\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"0ed1cd04-094a-4268-9786-a20d37192ed0\",\"Title\":\"File import demo 03\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"8787a22e-9dcf-4a72-83a6-743e02c5a669\",\"Title\":\"File import demo 04\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"5b755de7-ae22-4b8d-873c-21fa2a5c3330\",\"Title\":\"File import demo 05\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"21509700-2286-4c97-a6e2-06daa7123c73\",\"Title\":\"File import demo 06\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"252021fe-3572-4be8-bf99-8114865455f8\",\"Title\":\"File import demo 07\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"c47265e2-38d2-48c8-8f5d-ee1adc983b40\",\"Title\":\"File import demo 08\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"e18c6915-d0a8-4ab4-8d17-01316a21a875\",\"Title\":\"File import demo 09\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"b3539186-a56c-4ecc-9d7d-3bf0b785a6ce\",\"Title\":\"File import demo 10\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"af589a72-7549-4edf-9a91-d4e5cfe5f286\",\"Title\":\"File import demo 11\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"bf0bd269-5282-4f9f-9ac0-ab9290d08f81\",\"Title\":\"File import demo 12\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"e1d540e5-0b0d-49b4-8821-16be027cedaf\",\"Title\":\"File import demo 13\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"ff1dff3c-b9a8-418b-9483-074733411b29\",\"Title\":\"File import demo 14\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"c4c40268-5800-495b-bebd-e1ee3c86d7b6\",\"Title\":\"File import demo 15\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"f5a3f0de-f82b-4334-841d-9124775600b7\",\"Title\":\"File import demo 01\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"92c47768-2cdb-4008-b70a-69c6a26fbe8f\",\"Title\":\"File import demo 02\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"8af3cf10-b32d-443e-a50d-00fe1c4e1b3a\",\"Title\":\"File import demo 03\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"db435ec7-dbc5-4180-b583-049e773dc77c\",\"Title\":\"File import demo 04\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"31150d4c-5a3a-46ad-b66c-46646ad0e174\",\"Title\":\"File import demo 05\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"f9a14ff8-2b9e-4115-9686-ae533060109e\",\"Title\":\"File import demo 06\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"ddc3ab87-7b7c-47a6-a2ce-f2cd1047bd84\",\"Title\":\"File import demo 07\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"70797bc4-ea19-4ba5-9878-1e465e8d11b6\",\"Title\":\"File import demo 08\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"8f743a07-5ce5-40d0-bc35-ecbd2c88e4b2\",\"Title\":\"File import demo 09\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"e6a62bfa-c6e6-455b-90c9-8016255745cd\",\"Title\":\"File import demo 10\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"1d01a32a-181b-441c-abe3-8c6942dbbee9\",\"Title\":\"File import demo 11\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"b9e7bd88-1553-4670-ae1f-2e6668a15d29\",\"Title\":\"File import demo 12\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"63307707-5356-4c05-bff0-3d250baa2aa1\",\"Title\":\"File import demo 13\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"86cd884c-4c1c-46cf-ad12-a96493848e68\",\"Title\":\"File import demo 14\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"2a3285f9-0617-4512-91b5-e17a78677bd3\",\"Title\":\"File import demo 15\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"3b305017-c33b-4e1e-b943-23579ddfcaaf\",\"Title\":\"File import demo 01\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"3df24b32-ea7f-4067-ba84-c4ad62b0738a\",\"Title\":\"File import demo 02\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"08396e85-2648-4044-ab42-82ac0dafb273\",\"Title\":\"File import demo 03\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"13b079ec-739c-4baa-bdab-e8151f744800\",\"Title\":\"File import demo 04\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"bf153883-249a-4d8b-acf7-1cdc27d6ce76\",\"Title\":\"File import demo 05\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"41ffd90b-5db6-488e-8b67-fe9981d8dd77\",\"Title\":\"File import demo 06\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"e8a8a99c-118e-4282-b542-c8f67379c9dc\",\"Title\":\"File import demo 07\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"1a5d36fe-2658-4801-827a-8d8698b21ff9\",\"Title\":\"File import demo 08\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"fb92e283-0872-4eeb-9bf1-63fb7f72d29a\",\"Title\":\"File import demo 09\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"a782975c-06e5-49c6-9774-a66a6e200d4b\",\"Title\":\"File import demo 10\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"191ef023-4e6d-479e-bf87-ac632f934b89\",\"Title\":\"File import demo 11\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"44109131-f614-49fb-8ef6-d3660c59bf81\",\"Title\":\"File import demo 12\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"6249416e-28c4-4e2e-ae3e-5e49a5aa660c\",\"Title\":\"File import demo 13\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"c322da26-ca3d-426b-83a8-1b557fde592f\",\"Title\":\"File import demo 14\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"321421a1-5b11-4529-ab1a-fdcd8cf3614c\",\"Title\":\"File import demo 15\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"0c808d6d-4ebb-4365-9266-3e7f9a348997\",\"Title\":\"File import demo 01\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"703f1892-3400-4a70-b36a-bb342f6c22f4\",\"Title\":\"File import demo 02\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"3ddfd454-8c78-4c25-bdc4-dfac17ed8f0b\",\"Title\":\"File import demo 03\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"a9ad1634-267e-42fb-afe3-18683f3a96d0\",\"Title\":\"File import demo 04\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"15f97f8f-4dcc-4677-8c0c-47363eb4ad20\",\"Title\":\"File import demo 05\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"8c5d69e2-8118-4a4c-b94e-6736931b4dde\",\"Title\":\"File import demo 06\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"a1d9dcb5-1c48-4cff-945e-d03ba024b1d4\",\"Title\":\"File import demo 07\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"62a7b466-e849-4a9c-97bb-e2b64b74c320\",\"Title\":\"File import demo 08\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"b1dfae03-da5f-4051-9304-2df04eda9774\",\"Title\":\"File import demo 09\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"20c05797-5dc0-47bf-a144-b3f74ae30cd5\",\"Title\":\"File import demo 10\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"846bdfa7-cc23-45af-8068-3e768cc5f060\",\"Title\":\"File import demo 11\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"cf06a130-c43f-4777-a650-293aaa3bfca8\",\"Title\":\"File import demo 12\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"ad823e51-b332-45b2-90fd-52cedcb9e264\",\"Title\":\"File import demo 13\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"6ca7cc8e-cd1a-4186-9620-4c596120a2e4\",\"Title\":\"File import demo 14\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"3c2cebf6-0776-4e0e-98e3-306dfdb44cf5\",\"Title\":\"File import demo 15\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"43548e9d-dbdf-4131-82a3-072828a9831b\",\"Title\":\"File import demo 01\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"9a22daa2-8a76-4a7c-a0fe-d28f47aef3a9\",\"Title\":\"File import demo 02\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"106a33c6-d8b0-47bd-8d28-362703954b9a\",\"Title\":\"File import demo 03\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"4f76b99c-560a-41aa-8dd1-382ecc5d7e37\",\"Title\":\"File import demo 04\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"011fe0ba-8edf-4b70-8e24-9195b14cd441\",\"Title\":\"File import demo 05\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"b2c3cd27-69c8-4427-9ead-fe86b5140dc8\",\"Title\":\"File import demo 06\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"02f8fd30-8ca9-4ad6-9faa-8d60859efdcf\",\"Title\":\"File import demo 07\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"4a8789eb-a73c-4b8d-b6b5-d1ba1dd17ddb\",\"Title\":\"File import demo 08\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"361cf7bb-25b1-4d9d-9116-440884d292f5\",\"Title\":\"File import demo 09\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"02d944f2-11da-43f4-b6e3-354e82c9dac9\",\"Title\":\"File import demo 10\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"68844954-feaa-41b1-9494-bb7052bbdbec\",\"Title\":\"File import demo 11\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"555e8a31-3583-4b96-9a4b-224a210e2e7d\",\"Title\":\"File import demo 12\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"89e867d5-a9f4-4eeb-89a2-578a9a31787a\",\"Title\":\"File import demo 13\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"e5f375b2-6768-4e94-bca3-4d0954829d53\",\"Title\":\"File import demo 14\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"ba46d90d-fcc6-4383-a865-69bcec52327f\",\"Title\":\"File import demo 15\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"f13b2085-6dcc-4418-b6e6-9c4146576518\",\"Title\":\"File import demo 01\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"125ed9dc-9b3c-4964-bdc0-9f9fba529062\",\"Title\":\"File import demo 02\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"8929dd36-980c-453b-b133-282d88f38d7d\",\"Title\":\"File import demo 03\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"843fa1c8-af5e-456c-a469-abbedfcf57e7\",\"Title\":\"File import demo 04\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"e0ee7a8c-b3a7-4d67-a18e-9bb36e299e3c\",\"Title\":\"File import demo 05\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"00c6979e-3f8c-4579-8f9b-74eeff156cae\",\"Title\":\"File import demo 06\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"7673bb5e-dad4-4dfe-b783-960069f0e9f8\",\"Title\":\"File import demo 07\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"e5a0348b-bf14-43e6-9722-0331e964c283\",\"Title\":\"File import demo 08\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"e0bfe233-fab8-4842-abd9-30eea98d18ea\",\"Title\":\"File import demo 09\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"8d34e2aa-bee1-4d06-98f4-32c539b177ec\",\"Title\":\"File import demo 10\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"c5ddc880-58ef-4b92-81fb-53c981b302bc\",\"Title\":\"File import demo 11\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"f099412a-57a1-45b2-b956-f0ff0c41ce0e\",\"Title\":\"File import demo 12\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"04d73775-4ccc-4c60-a4d9-f6e9b9c20342\",\"Title\":\"File import demo 13\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"76c04411-e760-4bce-9f91-2110cd3c479c\",\"Title\":\"File import demo 14\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"ce3043d5-9958-4e52-ba4d-e4d941a676e7\",\"Title\":\"File import demo 15\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"b28bda96-b023-429a-8c6e-35d0fbaf9b27\",\"Title\":\"File import demo 01\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"d3a226e8-fb1c-45bf-a4e3-b9270b528d1e\",\"Title\":\"File import demo 02\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"9d6ff269-ea67-421e-a900-976301d5c927\",\"Title\":\"File import demo 03\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"2cc612db-c8ad-492d-b718-28426ca279ce\",\"Title\":\"File import demo 04\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"f92eb2ac-6f94-4dbe-b03e-cb4f12e03956\",\"Title\":\"File import demo 05\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"69b04c73-b919-47b0-9328-978433a9a360\",\"Title\":\"File import demo 06\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"02075591-962f-4088-9727-9aae40cc5d96\",\"Title\":\"File import demo 07\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"419f68ba-bd8c-4cef-80e3-7f4f972b6d24\",\"Title\":\"File import demo 08\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"d3e8d70b-b496-44b2-a7b5-f95662297e58\",\"Title\":\"File import demo 09\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"884dddac-469e-4d42-9b72-30893a79c540\",\"Title\":\"File import demo 10\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"15eb4143-a921-4b32-b721-ce2f51264ba0\",\"Title\":\"File import demo 11\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"6a0c989f-31b7-4e74-a408-7c303987a8ae\",\"Title\":\"File import demo 12\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"8e8edb20-78d5-47b0-a9fb-a1fcfe2e6fd7\",\"Title\":\"File import demo 13\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"low\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1},{\"ID\":\"118cd0cb-ffb3-4c8f-a380-cee1cf4ac132\",\"Title\":\"File import demo 14\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"medium\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":true,\"Version\":1},{\"ID\":\"99268178-440b-4acd-92fe-6a1620ebe970\",\"Title\":\"File import demo 15\",\"Description\":\"Prepared from JSON upload\",\"ListID\":\"inbox\",\"Priority\":\"high\",\"DueAt\":\"\",\"ParentID\":\"\",\"Completed\":false,\"Version\":1}]"
+          }
+        ],
+        "resultType": "complete"
+      }
+    }
+  },
+  {
+    "timestamp": "2026-09-27T18:00:20.767Z",
+    "source": "http",
+    "serverId": "127",
+    "direction": "HTTP",
+    "method": "POST /mcp",
+    "payload": {
+      "serverId": "127",
+      "request": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8080/mcp",
+        "headers": {
+          "accept": "application/json, text/event-stream",
+          "content-type": "application/json",
+          "mcp-method": "tools/call",
+          "mcp-name": "list_todos",
+          "mcp-protocol-version": "2026-07-28"
+        }
+      },
+      "response": {
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "cache-control": "no-cache, no-transform",
+          "content-type": "application/json",
+          "date": "Sun, 27 Sep 2026 18:00:20 GMT",
+          "transfer-encoding": "chunked",
+          "x-demo-instance": "todo-mcp-86c4b6f6d6-9hlss"
+        }
+      },
+      "durationMs": 34,
+      "bodyValues": {
+        "method": "tools/call",
+        "name": "list_todos",
+        "protocolVersion": "2026-07-28"
+      }
+    }
+  },
+  {
+    "timestamp": "2026-09-27T18:00:20.732Z",
+    "source": "mcp-server",
+    "serverId": "127",
+    "direction": "SEND",
+    "method": "tools/call",
+    "payload": {
+      "method": "tools/call",
+      "params": {
+        "name": "list_todos",
+        "arguments": {},
+        "_meta": {
+          "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+          "io.modelcontextprotocol/clientInfo": {
+            "name": "mcpjam-inspector",
+            "version": "0.0.0"
+          },
+          "io.modelcontextprotocol/clientCapabilities": {
+            "elicitation": {
+              "form": {},
+              "url": {}
+            },
+            "extensions": {
+              "io.modelcontextprotocol/enterprise-managed-authorization": {},
+              "io.modelcontextprotocol/skills": {},
+              "io.modelcontextprotocol/ui": {
+                "mimeTypes": [
+                  "text/html;profile=mcp-app"
+                ]
+              },
+              "io.modelcontextprotocol/tasks": {}
+            }
+          }
+        }
+      },
+      "jsonrpc": "2.0",
+      "id": 17
+    }
+  },
+  {
+    "timestamp": "2026-09-27T18:00:20.731Z",
+    "source": "mcp-server",
+    "serverId": "127",
+    "direction": "RECEIVE",
+    "method": "result",
+    "payload": {
+      "jsonrpc": "2.0",
+      "id": 16,
+      "result": {
+        "_meta": {
+          "io.modelcontextprotocol/serverInfo": {
+            "name": "todo-mcp-2026",
+            "version": "0.1.0"
+          }
+        },
+        "resultType": "complete",
+        "ttlMs": 0,
+        "cacheScope": "public",
+        "tools": [
+          {
+            "description": "Apply independent updates in a bounded SQLite transaction",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "updates": {
+                  "type": [
+                    "null",
+                    "array"
+                  ],
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "todoId": {
+                        "type": "string"
+                      },
+                      "changes": {
+                        "type": "object",
+                        "properties": {
+                          "priority": {
+                            "type": [
+                              "null",
+                              "string"
+                            ]
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "todoId",
+                      "changes"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "updates"
+              ],
+              "additionalProperties": false
+            },
+            "name": "bulk_update_todos"
+          },
+          {
+            "description": "Create one-time or recurring todo",
+            "inputSchema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "title",
+                "schedule"
+              ],
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "listId": {
+                  "type": "string"
+                },
+                "parentId": {
+                  "type": "string",
+                  "description": "Optional parent Todo ID for a subtask"
+                },
+                "priority": {
+                  "enum": [
+                    "low",
+                    "medium",
+                    "high"
+                  ]
+                },
+                "schedule": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "properties": {
+                    "kind": {
+                      "enum": [
+                        "one_time",
+                        "recurring"
+                      ]
+                    },
+                    "dueAt": {
+                      "type": "string"
+                    },
+                    "recurrence": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            },
+            "name": "create_todo"
+          },
+          {
+            "description": "Queue a durable asynchronous Todo import",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "items": {
+                  "type": [
+                    "null",
+                    "array"
+                  ],
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "title": {
+                        "type": "string"
+                      },
+                      "completed": {
+                        "type": "boolean"
+                      },
+                      "priority": {
+                        "type": "string"
+                      },
+                      "description": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "title",
+                      "completed",
+                      "priority"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "items"
+              ],
+              "additionalProperties": false
+            },
+            "name": "import_todos"
+          },
+          {
+            "description": "List todos",
+            "inputSchema": {
+              "type": "object",
+              "additionalProperties": false
+            },
+            "name": "list_todos"
+          },
+          {
+            "description": "Move or complete a todo. Always call this tool when a user asks to move or complete a todo; do not ask a manual follow-up first. If moving a parent to done with incomplete subtasks, this tool returns input_required with a signed requestState and options. Present that server response to the user, then retry this same tool with their choice and requestState.",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "todoId": {
+                  "type": "string"
+                },
+                "targetListId": {
+                  "type": "string"
+                },
+                "requestState": {
+                  "type": "string"
+                },
+                "choice": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "todoId",
+                "targetListId"
+              ],
+              "additionalProperties": false
+            },
+            "name": "move_todo"
+          },
+          {
+            "description": "Request cancellation of an import task",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "taskId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "taskId"
+              ],
+              "additionalProperties": false
+            },
+            "name": "tasks_cancel"
+          },
+          {
+            "description": "Get a durable import task",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "taskId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "taskId"
+              ],
+              "additionalProperties": false
+            },
+            "name": "tasks_get"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "timestamp": "2026-09-27T18:00:20.730Z",
+    "source": "http",
+    "serverId": "127",
+    "direction": "HTTP",
+    "method": "POST /mcp",
+    "payload": {
+      "serverId": "127",
+      "request": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8080/mcp",
+        "headers": {
+          "accept": "application/json, text/event-stream",
+          "content-type": "application/json",
+          "mcp-method": "tools/list",
+          "mcp-protocol-version": "2026-07-28"
+        }
+      },
+      "response": {
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "cache-control": "no-cache, no-transform",
+          "content-type": "application/json",
+          "date": "Sun, 27 Sep 2026 18:00:20 GMT",
+          "transfer-encoding": "chunked",
+          "x-demo-instance": "todo-mcp-86c4b6f6d6-9hlss"
+        }
+      },
+      "durationMs": 137,
+      "bodyValues": {
+        "method": "tools/list",
+        "protocolVersion": "2026-07-28"
+      }
+    }
+  },
+  {
+    "timestamp": "2026-09-27T18:00:20.591Z",
+    "source": "mcp-server",
+    "serverId": "127",
+    "direction": "SEND",
+    "method": "tools/list",
+    "payload": {
+      "method": "tools/list",
+      "jsonrpc": "2.0",
+      "id": 16,
+      "params": {
+        "_meta": {
+          "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+          "io.modelcontextprotocol/clientInfo": {
+            "name": "mcpjam-inspector",
+            "version": "0.0.0"
+          },
+          "io.modelcontextprotocol/clientCapabilities": {
+            "elicitation": {
+              "form": {},
+              "url": {}
+            },
+            "extensions": {
+              "io.modelcontextprotocol/enterprise-managed-authorization": {},
+              "io.modelcontextprotocol/skills": {},
+              "io.modelcontextprotocol/ui": {
+                "mimeTypes": [
+                  "text/html;profile=mcp-app"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+]
