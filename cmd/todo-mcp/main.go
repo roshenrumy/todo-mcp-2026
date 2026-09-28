@@ -43,6 +43,21 @@ type taskToolCall struct {
 	} `json:"arguments"`
 }
 
+type moveTodoCall struct {
+	Name      string `json:"name"`
+	Arguments struct {
+		TodoID       string `json:"todoId"`
+		TargetListID string `json:"targetListId"`
+	} `json:"arguments"`
+	InputResponses map[string]struct {
+		Action  string `json:"action"`
+		Content struct {
+			Choice string `json:"choice"`
+		} `json:"content"`
+	} `json:"inputResponses,omitempty"`
+	RequestState string `json:"requestState,omitempty"`
+}
+
 func text(v any) *mcp.CallToolResult {
 	b, _ := json.Marshal(v)
 	return &mcp.CallToolResult{Content: []mcp.Content{&mcp.TextContent{Text: string(b)}}}
@@ -213,7 +228,7 @@ func serve(s todo.Service, jobs importjob.Service) {
 	h := mcp.NewStreamableHTTPHandler(func(*http.Request) *mcp.Server { return server }, &mcp.StreamableHTTPOptions{Stateless: true, JSONResponse: true})
 	http.Handle("/mcp", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-Demo-Instance", env("HOSTNAME", "local"))
-		if serveTaskExtension(w, r, jobs) {
+		if serveProtocolExtensions(w, r, s, jobs, codec) {
 			return
 		}
 		h.ServeHTTP(w, r)
@@ -221,9 +236,10 @@ func serve(s todo.Service, jobs importjob.Service) {
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-// serveTaskExtension emits the extension's top-level task result. The SDK's
-// normal tool helper only emits CallToolResult, which Inspector cannot track.
-func serveTaskExtension(w http.ResponseWriter, r *http.Request, jobs importjob.Service) bool {
+// serveProtocolExtensions emits modern top-level MRTR and Task results. The
+// SDK's normal tool helper only emits CallToolResult, which Inspector cannot
+// track as either of those result families.
+func serveProtocolExtensions(w http.ResponseWriter, r *http.Request, todos todo.Service, jobs importjob.Service, codec requeststate.Codec) bool {
 	if r.Method != http.MethodPost {
 		return false
 	}
@@ -233,12 +249,19 @@ func serveTaskExtension(w http.ResponseWriter, r *http.Request, jobs importjob.S
 	}
 	r.Body = io.NopCloser(bytes.NewReader(body))
 	var rpc rpcEnvelope
-	if json.Unmarshal(body, &rpc) != nil || !taskCapable(rpc.Params) {
+	if json.Unmarshal(body, &rpc) != nil {
 		return false
 	}
 	if rpc.Method == "tools/call" {
+		var move moveTodoCall
+		if json.Unmarshal(rpc.Params, &move) == nil && move.Name == "move_todo" {
+			return serveMoveTodoMRTR(w, rpc, move, todos, codec)
+		}
 		var call taskToolCall
 		if json.Unmarshal(rpc.Params, &call) != nil || call.Name != "import_todos" {
+			return false
+		}
+		if !taskCapable(rpc.Params) {
 			return false
 		}
 		task, err := jobs.Enqueue(call.Arguments.Items)
@@ -250,6 +273,9 @@ func serveTaskExtension(w http.ResponseWriter, r *http.Request, jobs importjob.S
 		return true
 	}
 	if rpc.Method == "tasks/get" {
+		if !taskCapable(rpc.Params) {
+			return false
+		}
 		var params taskParams
 		if json.Unmarshal(rpc.Params, &params) != nil {
 			return false
@@ -261,7 +287,43 @@ func serveTaskExtension(w http.ResponseWriter, r *http.Request, jobs importjob.S
 		writeTaskJSON(w, rpc.ID, taskPayload(task))
 		return true
 	}
+	if rpc.Method == "tasks/update" {
+		if !taskCapable(rpc.Params) {
+			return false
+		}
+		var params taskParams
+		if json.Unmarshal(rpc.Params, &params) != nil {
+			return false
+		}
+		if _, err := jobs.Get(params.TaskID); err != nil {
+			writeJSONRPCError(w, rpc.ID, -32602, "unknown taskId")
+			return true
+		}
+		writeTaskJSON(w, rpc.ID, map[string]any{"resultType": "complete"})
+		return true
+	}
+	if rpc.Method == "tasks/cancel" {
+		if !taskCapable(rpc.Params) {
+			return false
+		}
+		var params taskParams
+		if json.Unmarshal(rpc.Params, &params) != nil {
+			return false
+		}
+		if err := jobs.Cancel(params.TaskID); err != nil {
+			writeJSONRPCError(w, rpc.ID, -32602, err.Error())
+			return true
+		}
+		writeTaskJSON(w, rpc.ID, map[string]any{"resultType": "complete"})
+		return true
+	}
 	if rpc.Method == "tasks/list" {
+		if !taskCapable(rpc.Params) {
+			return false
+		}
+		// MCPJam's Tasks UI did not display active tasks without tasks/list, so the
+		// demo keeps this compatibility endpoint even though the 2026 Tasks
+		// extension expects clients to retain task handles instead of listing them.
 		tasks, err := jobs.ListActive()
 		if err != nil {
 			return false
@@ -270,6 +332,94 @@ func serveTaskExtension(w http.ResponseWriter, r *http.Request, jobs importjob.S
 		return true
 	}
 	return false
+}
+
+func serveMoveTodoMRTR(w http.ResponseWriter, rpc rpcEnvelope, call moveTodoCall, todos todo.Service, codec requeststate.Codec) bool {
+	if call.RequestState == "" {
+		if !elicitationCapable(rpc.Params) {
+			writeJSONRPCError(w, rpc.ID, -32021, "missing required elicitation capability")
+			return true
+		}
+		children, version, err := todos.IncompleteChildren(call.Arguments.TodoID)
+		if err != nil {
+			writeJSONRPCError(w, rpc.ID, -32602, err.Error())
+			return true
+		}
+		if call.Arguments.TargetListID == "done" && len(children) > 0 {
+			token, err := codec.Encode(requeststate.State{Operation: "move_todo", TodoID: call.Arguments.TodoID, TargetListID: call.Arguments.TargetListID, TodoVersion: version, IncompleteSubtaskIDs: children, ExpiresAt: time.Now().Add(10 * time.Minute)})
+			if err != nil {
+				writeJSONRPCError(w, rpc.ID, -32603, err.Error())
+				return true
+			}
+			writeTaskJSON(w, rpc.ID, map[string]any{
+				"resultType": "input_required",
+				"inputRequests": map[string]any{"subtask_decision": map[string]any{
+					"method": "elicitation/create",
+					"params": map[string]any{"mode": "form", "message": fmt.Sprintf("This todo has %d incomplete subtasks. What should happen?", len(children)), "requestedSchema": map[string]any{"type": "object", "properties": map[string]any{"choice": map[string]any{"type": "string", "enum": []string{"move_parent_only", "move_with_subtasks", "cancel"}}}, "required": []string{"choice"}}},
+				}},
+				"requestState": token,
+			})
+			return true
+		}
+		if err := todos.Move(call.Arguments.TodoID, call.Arguments.TargetListID, false); err != nil {
+			writeJSONRPCError(w, rpc.ID, -32602, err.Error())
+			return true
+		}
+		writeTaskJSON(w, rpc.ID, completeToolResult(map[string]any{"moved": true}))
+		return true
+	}
+
+	state, err := codec.Decode(call.RequestState)
+	if err != nil || state.TodoID != call.Arguments.TodoID || state.TargetListID != call.Arguments.TargetListID {
+		writeJSONRPCError(w, rpc.ID, -32602, "invalid requestState")
+		return true
+	}
+	response, ok := call.InputResponses["subtask_decision"]
+	if !ok || response.Action != "accept" {
+		writeJSONRPCError(w, rpc.ID, -32602, "missing accepted subtask_decision")
+		return true
+	}
+	_, version, err := todos.IncompleteChildren(call.Arguments.TodoID)
+	if err != nil || version != state.TodoVersion {
+		writeJSONRPCError(w, rpc.ID, -32602, "todo changed while awaiting input")
+		return true
+	}
+	choice := response.Content.Choice
+	if choice == "cancel" {
+		writeTaskJSON(w, rpc.ID, completeToolResult(map[string]any{"cancelled": true}))
+		return true
+	}
+	if choice != "move_parent_only" && choice != "move_with_subtasks" {
+		writeJSONRPCError(w, rpc.ID, -32602, "invalid subtask decision")
+		return true
+	}
+	if err := todos.Move(call.Arguments.TodoID, call.Arguments.TargetListID, choice == "move_with_subtasks"); err != nil {
+		writeJSONRPCError(w, rpc.ID, -32602, err.Error())
+		return true
+	}
+	writeTaskJSON(w, rpc.ID, completeToolResult(map[string]any{"moved": true}))
+	return true
+}
+
+func completeToolResult(value any) map[string]any {
+	encoded, _ := json.Marshal(value)
+	return map[string]any{"resultType": "complete", "content": []map[string]string{{"type": "text", "text": string(encoded)}}}
+}
+
+func elicitationCapable(params json.RawMessage) bool {
+	var value map[string]any
+	if json.Unmarshal(params, &value) != nil {
+		return false
+	}
+	meta, _ := value["_meta"].(map[string]any)
+	capabilities, _ := meta["io.modelcontextprotocol/clientCapabilities"].(map[string]any)
+	_, ok := capabilities["elicitation"]
+	return ok
+}
+
+func writeJSONRPCError(w http.ResponseWriter, id json.RawMessage, code int, message string) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]any{"jsonrpc": "2.0", "id": json.RawMessage(id), "error": map[string]any{"code": code, "message": message}})
 }
 
 func taskPayload(task importjob.Task) map[string]any {
